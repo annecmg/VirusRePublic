@@ -119,8 +119,9 @@ accessions that can be run to test the installation.
 
 `test_accessions.txt`:
 ```
-SRR12002056 #fragmented genome
-SRR9678051 #complete genome
+SRR11822934 #fragmented genome, host: Spodoptera exigua
+SRR9678051 #complete genome, host: Plutella xylostella
+SRR1050532 #2 complete and 1 patched genome, host: Spodoptera exigua
 SRR7216194 # Single-end accession, will be removed
 SRRTESTING # Non-existing accession ID, will be ignored.
 ```
