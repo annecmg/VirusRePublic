@@ -1,0 +1,109 @@
+---
+# Main config file MSc Thesis Devin van Valkengoed
+# General options that can be changed
+## Working directory pointing to the GitHub directory
+root_dir: "/home/kupcz001/lustre/iflavirus/pipeline/ViralGenomeConstrictor/"
+
+## File that contains the accessions that should be used
+accession_file: "/home/kupcz001/lustre/iflavirus/pipeline/ViralGenomeConstrictor/testing_data/test_accessions.txt"
+
+## Location of main python script and included Snakefiles (relative paths)
+scripts:
+  ## Directory that contains all the dependent python scripts
+  python_root: "python_scripts/"
+
+  ## Python script to filter the accessions based on library layout
+  librlayout_filter_script: "metadata_filter.py"
+
+  ## Python script to filter the accessions based on 'abnormal' hosts
+  filter_host: "find_multiple_hosts.py"
+
+  ## meta_accession_parser.py
+  accession_parser: "meta_accession_parser.py"
+
+  ## Python script that downloads SRA data
+  sra_download_script: "sra_download.py"
+
+  ## name of the snakefile used for metadata downloading
+  metadata_downloading_snakefile: "snake_files/Snakefile_metadata.smk"
+
+  ## name of the snakefile to download the SRA data
+  downloading_snakefile: "snake_files/Snakefile_downloading.smk"
+
+  ## name of the snakefile to download the host genomes
+  host_genome_snakefile: "snake_files/Snakefile_host_genomes.smk"
+
+  ## name of the snakefile for read processing
+  read_processing_snakefile: "snake_files/Snakefile_read_processing.smk"
+  read_processing_denovo_snakefile: "snake_files/Snakefile_read_processing_denovo.smk"
+
+
+# SRA data download
+## Specify output/temporary directory and max download time in sec.
+## Default timeout = 1200 s. (20 min.). timeout: 'inf' will not limit the
+## Download time.
+download:
+  dir: "output/download/"
+  temp_files: "output/temp_files/"
+  timeout: 1200
+  threads: 5
+
+
+# Host genome download and indexing
+## Location to store the host genomes (relative to the root_dir above)
+host_genomes: "output/ref_genomes/"
+
+
+# Directory pathways
+## Metadata
+metadata:
+  meta_root: "output/metadata/"
+  stats: "stats/"
+  paired_accessions: "paired_accessions/"
+  filtered_accessions: "filtered_accessions.txt"
+  paired_file: "paired_end_accessions.txt"
+  single_file: "single_end_accessions.txt"
+  undetermined: "undetermined_accessions.txt"
+
+
+## Raw reads
+raw_reads: "output/raw_reads/"
+## Trimmed reads
+trimmed_dir: "output/trimmed_reads/"
+## Mapped reads
+mapped_dir: "output/mapping/"
+## Extracted unmapped reads
+extracted_dir: "output/extracted_reads/"
+## Assembly
+assembly_dir: "output/assembly/"
+## DIAMOND
+diamond_dir: "output/diamond/"
+
+
+# Log file pathways
+logs:
+  root: "output/logs/"
+  # main location will be used for custom process log files.
+  main: "main_logs/"
+  meta_data: "meta_data/"
+  download: "download/"
+  trimming: "trimming/"
+
+
+# Mapping parameters
+mapping:
+  threads: 4 # number of threads to use for mapping per accessions
+
+# Assembly parameters
+## For assembly_tool, choose either rnaviralSPAdes or metaSPAdes.
+assembly:
+  tool: "rnaviralspades"
+  kmer_values: "33,55,77,99,127"
+  threads: 16 # = default of SPAdes
+
+# DIAMOND2 parameters
+diamond:
+  db: "databases/iflav_proteins.dmnd"
+  name: "iflav"
+  threads: 2
+...
