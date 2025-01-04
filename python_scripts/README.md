@@ -52,8 +52,12 @@ data of the libraries that contain paired-end reads.
 This standalone python script can be used to filter tabular DIAMOND output files. DIAMOND files can be given as input 
 using file paths (separated by spaces) or by providing a complete folder in which all DIAMOND files should be used. 
 The filtered output can be printed to stdout, or written to a given output file. When the option '-q' or '--quiet' 
-is provided, the script only provides the original tabular output (after filtering) and does not provide headers or 
-file names. 
+is provided, the script only provides the original tabular output (after filtering) and does not provide headers or file names. 
+
+Example usage:
+```
+python python_scripts/DIAMOND_filter.py --top -D output/diamond/ -l 8000 12000 -o output/diamond.txt
+```
 
 ```
 usage: DIAMOND_filter.py [-h] (-d [[dmnd] ...] | -D [input-dir]) (-o <output> | -p) [-q] [-id [%AID]] [-l [<min_len> [[max_len] ...]]] [-al <alignment_len>] [-c [coverage]] [-e [E-value]] [--nodes | --top | --targets | --top_aid | --self] [--version]
