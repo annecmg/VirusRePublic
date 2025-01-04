@@ -1,7 +1,7 @@
-# ViralGenomeConstrictor (Snakemake workflow)
+# VirusRePublic
 This README contains information about how to use the Snakemake workflow 
-"ViralGenomeConstrictor" that is able to assemble viral RNA genomes from given 
-libraries provided by a list of NCBI SRA accession IDs. 
+**VirusRePublic**: VIRUS genome REconstruction from PUBLIC sequencing data.
+The workflow will assemble RNA virus genomes from a list of NCBI SRA accession IDs.
 
 # Installation
 ## Prerequisites
