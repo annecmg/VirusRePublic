@@ -160,15 +160,7 @@ def parsing_cmd_line():
                                                     "accessions. Note that "
                                                     "the metadata of these "
                                                     "accessions should be "
-                                                    "stored locally. The "
-                                                    "default location of the "
-                                                    "metadata = /lustre/BIF/"
-                                                    "nobackup/valke024/"
-                                                    "msc_thesis/main_data/"
-                                                    "metadata/"
-                                                    "paired_accessions/ and "
-                                                    "the default extension = "
-                                                    "_metadata.txt")
+                                                    "stored locally. ")
     taxid_count_parser.add_argument("-a", "--accessions", type=str,
                                     required=True,
                                     help="str -- pathway to a .txt file that "
@@ -184,10 +176,7 @@ def parsing_cmd_line():
     taxid_count_parser.add_argument("-b", "--metadata_base",
                                     help="str -- Base pathway to the "
                                          "directory where all the metadata "
-                                         "files are stored. Default = "
-                                         "/lustre/BIF/nobackup/valke024/"
-                                         "msc_thesis/main_data/metadata/"
-                                         "paired_accessions/",
+                                         "files are stored.",
                                     metavar="[./metadata_directory/]",
                                     dest="metadata_base")
     taxid_count_parser.add_argument("-x", "--extension",
@@ -452,12 +441,7 @@ def count_taxids(accession_file, extension=None, base_loc=None):
                   based on the number of times the TaxID occurs in
                   the metadata.
     """
-    # Set base location to the default I use on the server, if not specified
-    if not base_loc:
-        metadata_base = "/lustre/BIF/nobackup/valke024/msc_thesis/main_data/" \
-                        "metadata/paired_accessions/"
-    else:
-        metadata_base = str(base_loc)
+    metadata_base = str(base_loc)
 
     # Set the default extension I use on the server, if not specified
     if not extension:
