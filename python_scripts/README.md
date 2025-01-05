@@ -18,12 +18,12 @@ All the python scripts that can be found in this repository.
 
 ### Pre- and postprocessing scripts
 
-- [`DIAMOND_filter.py`](#diamond_filterpy): can be used to filter DIAMOND2 
+- [`DIAMOND_filter.py`](#diamond_filterpy): script to filter DIAMOND2 
   alignment files (tabular format).
   - `translate_rna.py`: helper module, translates nucleotide FASTA 
     sequences into protein sequences.  
-- `fetch_protein_seq.py`: script used to fetch protein sequences in FASTA 
-  format, using NCBI protein IDs.
+- [`fetch_protein_seq.py`](#fetch_protein_seqpy): script to fetch protein sequences in FASTA 
+  format from NCBI.
 - [`viral_completeness.py`](#viral_completenesspy): used to assess viral genome 
   completeness in DIAMOND2 alignment files or to patch fragmented viral 
   genome assemblies.
@@ -56,7 +56,7 @@ is provided, the script only provides the original tabular output (after filteri
 
 Example usage:
 ```
-python python_scripts/DIAMOND_filter.py --top -D output/diamond/ -l 8000 12000 -o output/diamond.txt
+python python_scripts/DIAMOND_filter.py --top_aid -D output/diamond/ -l 8000 12000 -o output/diamond.txt
 ```
 
 ```
@@ -85,13 +85,22 @@ options:
                         Floating point number used as the minimum K-mer coverage. All alignments with coverage > '--coverage' will be saved to the output file.
   -e, --evalue [E-value]
                         Floating point number used as the maximum E-value. Every alignment that has a E-value > 'eval' will be ignored.
-  --nodes               When this option is given, only the unique nodes that are found after filtering are given as output. The output format is as: <file_name> tab <node_name> tab <file_path>
-  --top                 Obtain the contig with the best hit, based on %AID for every given input file. Other commands can be used to filter for e.g. alignment length or contig length.
-  --targets             This option shows all the accessions of the unique targets to which there is an alignment after filtering.
   --top_aid             Obtains the best alignment for every unique node, based on alignment identity percentage (% AID).
+  --top                 Obtain the contig with the best hit, based on %AID for every given input file. Other commands can be used to filter for e.g. alignment length or contig length.
+  --nodes               When this option is given, only the unique nodes that are found after filtering are given as output. The output format is as: <file_name> tab <node_name> tab <file_path>
+  --targets             This option shows all the accessions of the unique targets to which there is an alignment after filtering.
   --self                When this option is given, self alignments are removed from the output based on query and target name. I.e. if the query and target protein are the same and thus give 100% AID.
   --version             show program's version number and exit
 ```
+
+### fetch_protein_seq.py
+
+This standalone script can be used to fetch protein sequences in FASTA format from NCBI.
+It will print a multi-fasta to the screen.
+
+Usage: `python3 fetch_protein_seq.py sequences_in.txt > output.fasta`, where
+`sequences_in.txt` is a file with an NCBI protein IDs on every line.
+
 ### viral_completeness.py
 This standalone python script can be used to determine the completeness of 
 *Iflaviridae* genomes found in the output DIAMOND2 alignment files. It can 
