@@ -118,27 +118,27 @@ def parsing_cmd():
 
     # Specific filtering options
     advanced_filtering = parser.add_mutually_exclusive_group()
-    advanced_filtering.add_argument("--nodes", help="When this option is given, "
-                                                    "only the unique nodes that are "
-                                                    "found after filtering are "
-                                                    "given as output. The output format is as: "
-                                                    "<file_name> tab <node_name> tab <file_path> ",
-                                    action="store_true", dest="nodes")
+    advanced_filtering.add_argument("--top_aid",
+                                    help="Obtains the best alignment for every unique node, based on alignment "
+                                         "identity percentage (%% AID).",
+                                    action="store_true", dest="top_aid")
     advanced_filtering.add_argument("--top", help="Obtain the contig with the best "
                                                   "hit, based on %%AID for every "
                                                   "given input file. Other commands "
                                                   "can be used to filter for e.g. "
                                                   "alignment length or contig length. ",
                                     action="store_true", dest="top")
+    advanced_filtering.add_argument("--nodes", help="When this option is given, "
+                                                    "only the unique nodes that are "
+                                                    "found after filtering are "
+                                                    "given as output. The output format is as: "
+                                                    "<file_name> tab <node_name> tab <file_path> ",
+                                    action="store_true", dest="nodes")
     advanced_filtering.add_argument("--targets",
                                     help="This option shows all the accessions of the "
                                          "unique targets to which there is an alignment "
                                          "after filtering.",
                                     action="store_true", dest="target")
-    advanced_filtering.add_argument("--top_aid",
-                                    help="Obtains the best alignment for every unique node, based on alignment "
-                                         "identity percentage (%% AID).",
-                                    action="store_true", dest="top_aid")
     advanced_filtering.add_argument("--self", help="When this option is given, self "
                                                    "alignments are removed from the "
                                                    "output based on query and "
