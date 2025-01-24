@@ -2,6 +2,7 @@
 """Author: Devin van Valkengoed
 
 Date: 25-Apr-2023
+      24-Jan-2025: v2.0
 Description: script that can be used to determine the mapping statistics used
              when raw sequencing reads are mapped against a reference genome.
 
@@ -12,8 +13,6 @@ Required arguments:
                        on every new line.
     -b/--base -- str, pathway to the base location where the log files are
                  stored.
-    -m/--metadata -- str, pathway to the base folder where all metadata
-                     files of the provided accessions are stored.
     -u/--unavailable -- str, pathway to a file where the accessions are
                         writen to for which no mapping stats could be
                         determined.
@@ -23,9 +22,6 @@ Required arguments:
 Optional arguments:
     -h/--help -- str, show help message and exit.
 
-TODO:
-    * Create write output function per TaxID
-    *
 """
 # Import statements
 import subprocess
@@ -53,11 +49,6 @@ def parsing_cmd_line():
                              "logfiles where the mapping percentage is "
                              "stored in.",
                         dest="base")
-    parser.add_argument("-m", "--metadata", type=str, required=True,
-                        help="str, pathway to the base folder where all "
-                             "metadata files of the given accessions are "
-                             "stored. ",
-                        dest="metadata")
     parser.add_argument("-u", "--unavailable", type=str, required=True,
                         help="Pathway to a file where the accessions of "
                              "which no mapping statistic could be determined "
@@ -72,29 +63,6 @@ def parsing_cmd_line():
 
 
 # Functions
-def determine_taxid(metadata):
-    """Uses the (local) metadata of an accession to determine the host TaxID
-
-    Key arguments:
-        metadata -- str, pathway to the metadata file of the accession of
-                    which the TaxID should be determined.
-
-    Returns:
-        taxid -- int, taxonomic identifier as determined by NCBI-SRA obtained
-                 from the provided metadata.
-    """
-    cmd_taxid = "cut -d',' -f28 {} | tail +2".format(metadata)
-
-    try:
-        taxid = int(subprocess.check_output(cmd_taxid, shell=True).decode(
-            "UTF-8").strip())
-    except ValueError:
-        raise ValueError("TaxID of one of the accessions could not be "
-                         "determined, exiting the script!") from None
-
-    return taxid
-
-
 def determine_mapping_percentage(logfile):
     """Obtains the percentage of reads that map against the host genome
 
@@ -105,7 +73,7 @@ def determine_mapping_percentage(logfile):
     Returns:
         mapping_perc -- float, percentage of mapped reads.
     """
-    cmd_mapping = "grep -F 'overall alignment rate' {}".format(logfile)
+    cmd_mapping = "grep -F 'overall alignment rate' {} 2>/dev/null".format(logfile)
 
     map_perc = subprocess.check_output(cmd_mapping, shell=True).decode(
         "UTF-8").strip()
@@ -157,16 +125,20 @@ def write_line(line, output_file):
     return
 
 
-def write_output():
+def write_output(mapping_stats, output_file):
     """Writes the mapping statistics to the output file
 
-     Key arguments:
+    Key arguments:
+        mapping_stats -- list of strings, each containing accession and mapping percentage.
+        output_file -- str, pathway to the file where the statistics should be written.
 
-
-     Returns:
-         None
+    Returns:
+        None
     """
-
+    with open(output_file, 'w') as output:
+        output.write("accession\tmapping_percentage\n")
+        for stat in mapping_stats:
+            output.write(stat + "\n")
 
 
 def main():
@@ -181,58 +153,23 @@ def main():
     accessions = line_parser(args.accessions)
 
     # Step 2: loop through the individual accessions, determine mapping stats
-    taxid_stats = {'total': [0, 0], 'unavailable': [0, 0]}
-    indivi_stats = {}
+    mapping_stats = []
 
     for acc in accessions:
-        metadata_loc = "{}{}_metadata.txt".format(args.metadata, acc)
         logfile_location = "{}main_{}.log".format(args.base, acc)
-
-        # Try to determine the TaxID, if not possible, write to unavailable
-        try:
-            taxid = determine_taxid(metadata_loc)
-        except ValueError:
-            taxid_stats['unavailable'][0] += 1
-            write_line(acc, args.unav)
-            continue
 
         # Try to determine the mapping percentage, if not write to unavailable
         try:
             mapping_perc = determine_mapping_percentage(logfile_location)
+            mapping_stats.append(f"{acc}\t{mapping_perc}")
         except subprocess.CalledProcessError:
-            taxid_stats['unavailable'][0] += 1
             write_line(acc, args.unav)
             continue
 
-        # Create a total count and percentage (per TaxID)
-        if taxid not in taxid_stats.keys():
-            taxid_stats[taxid] = [1, mapping_perc]
-            taxid_stats['total'][0] += 1
-            taxid_stats['total'][1] += mapping_perc
-        else:
-            taxid_stats[taxid][0] += 1
-            taxid_stats[taxid][1] += mapping_perc
-            taxid_stats['total'][0] += 1
-            taxid_stats['total'][1] += mapping_perc
+        # Step 3: Write the mapping statistics to the output file
+        write_output(mapping_stats, args.output)
 
-    # Calculate the average mapping percentage per TaxID
-    for identifier in taxid_stats:
-        taxid_stats[identifier][1] = round(taxid_stats[identifier][1] /
-                                           taxid_stats[identifier][0], 2)
-
-
-    for tax_identifier in taxid_stats:
-        print("{}\t{}\t{}".format(tax_identifier,
-                                  str(taxid_stats[tax_identifier][0]),
-                                  taxid_stats[tax_identifier][1]))
-
-
-
-
-
-    # Write the output
-
-
+        print("Mapping statistics have been written to '{}'.".format(args.output))
 
 
 if __name__ == '__main__':

@@ -1,10 +1,12 @@
 ---
 # All file names are expected to be like: ~/wdr/[accessions]_ext
 # General settings
-input_accessions: /lustre/BIF/nobackup/valke024/msc_thesis/main_data/metadata/stats/master_list_accessions.txt
+# Please provide the full path to a file containing NCBI SRA accessions, the diamond protein db and the fasta files
+# with know viral proteins.
+input_accessions: </home/my_input_accessions.txt>
 
-temp_files: /lustre/BIF/nobackup/valke024/msc_thesis/main_data/fragmented_accessions/temp_data
-log_files: /lustre/BIF/nobackup/valke024/msc_thesis/main_data/fragmented_accessions/log_files
+temp_files: output/temp_files
+log_files: output/logs
 
 # Filter settings
 min_p_id_alnlen: 30000
@@ -15,46 +17,46 @@ best_target:
     min_prot_len_nt: 700 # based on some contigs having a very short ORF
 
 # Metadata file location and extension
-metadata_loc: /lustre/BIF/nobackup/valke024/msc_thesis/main_data/metadata/paired_accessions
+metadata_loc: output/metadata/paired_accessions
 metadata_ext: _metadata.txt
 
 # Diamond file location and extension
-diamond_prot_db: /lustre/BIF/nobackup/valke024/msc_thesis/bin/protein_db/picorna_proteins_complete.dmnd
+diamond_prot_db: <bin/protein_db/picorna_proteins_complete.dmnd>
 diamond_cores: 5
-diamond_blastp_out: /lustre/BIF/nobackup/valke024/msc_thesis/main_data/fragmented_accessions/temp_data/blastp_output
-diamond_loc: /lustre/BIF/nobackup/valke024/msc_thesis/main_data/diamond
+diamond_blastp_out: output/temp_files
+diamond_loc: output/diamond
 diamond_ext: _picornavirales.dmnd
 
 # Assembly file location and extension
-assembly_loc: /lustre/BIF/nobackup/valke024/msc_thesis/main_data/assembly/rnaviralspades
+assembly_loc: output/assembly/rnaviralspades
 assembly_ext: contigs.fasta
 
 # Output folder for the final patched sequences
-output_fasta_dir: /lustre/BIF/nobackup/valke024/msc_thesis/main_data/fragmented_accessions/fasta_files
+output_fasta_dir: output/fragmented_genomes
 
 # Parameters per viral family
 iflaviridae:
-    known_proteins: /lustre/BIF/nobackup/valke024/msc_thesis/bin/protein_db/iflaviridae_proteins_08may2023.seq
+    known_proteins: <bin/protein_db/iflaviridae_proteins_08may2023.seq>
     min_genome_len: 8000
     max_genome_len: 12000
 
 dicistroviridae:
-    known_proteins: /lustre/BIF/nobackup/valke024/msc_thesis/bin/protein_db/dicistroviridae_proteins_08may2023.seq
+    known_proteins: <bin/protein_db/dicistroviridae_proteins_08may2023.seq>
     min_genome_len: 7000
     max_genome_len: 11000
 
 marnaviridae:
-    known_proteins: /lustre/BIF/nobackup/valke024/msc_thesis/bin/protein_db/marnaviridae_proteins_08may2023.seq
+    known_proteins: <bin/protein_db/marnaviridae_proteins_08may2023.seq>
     min_genome_len: 7600
     max_genome_len: 10600
 
 picornaviridae:
-    known_proteins: /lustre/BIF/nobackup/valke024/msc_thesis/bin/protein_db/picornaviridae_proteins_08may2023.seq
+    known_proteins: <bin/protein_db/picornaviridae_proteins_08may2023.seq>
     min_genome_len: 5700
     max_genome_len: 10100
 
 secoviridae:
-    known_proteins: /lustre/BIF/nobackup/valke024/msc_thesis/bin/protein_db/secoviridae_proteins_08may2023.seq
+    known_proteins: <bin/protein_db/secoviridae_proteins_08may2023.seq>
     min_genome_len: 8000
     max_genome_len: 14700
 

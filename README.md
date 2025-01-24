@@ -19,10 +19,10 @@ After installing conda, use the following command to install mamba:
 
 To use the pipeline, you have to clone this repository using Git.
 
-We suggest that you create a specific directory to store ViralGenomeConstrictor.
+We suggest that you create a specific directory to store VirusRePublic.
 After accessing the directory through the command line, use the following command:
 
-```git clone https://github.com/annecmg/ViralGenomeConstrictor.git```
+```git clone git@github.com:annecmg/VirusRePublic.git```
 
 After this step, you can configure snakemake as described in the next section.
 
@@ -35,7 +35,12 @@ suitable Conda environment](https://conda.io/projects/conda/en/latest/user-guide
 
 To create the environment, run the code below: 
 ```
-mamba env create --prefix /desired/location/my_env_name -f main_environment.yml
+mamba env create --prefix /desired/location/my_env_name -f ./config/main_environment.yml
+```
+Some included packages are not build for osx-arm64. If you are on an Apple Silicon Mac (M1 - M5), it is best to run 
+mamba in an emulated environment by setting the platform explicitly:
+```shell  
+CONDA_SUBDIR=osx-64 mamba env create --prefix /desired/location/my_env_name -f ./config/main_environment.yml
 ```
 
 Next to the main environment, the workflow needs a separate environment to 
@@ -88,7 +93,7 @@ After chancing the parameters in the config file as specified above, this
 Snakefile can be evoked as followed: 
 
 ```shell
-conda activate vgc_env
+conda activate vrp_env
 snakemake -j 1 -s snake_files/Snakefile_metadata.smk --resources api_calls=2 -p --verbose
 ```
 
@@ -96,7 +101,7 @@ snakemake -j 1 -s snake_files/Snakefile_metadata.smk --resources api_calls=2 -p 
 The complete Snakemake workflow that includes mapping to the host genome can be started with the following commandline arguments:
 
 ```shell
-conda activate vgc_env
+conda activate vrp_env
 snakemake -s Snakefile_main.smk -j 8 -p --scheduler greedy --resources api_calls=2 disk_mb=15
 ```
 
@@ -155,7 +160,7 @@ If that is not needed, the folder can be removed.
 
 Also in the de novo mode, first run the script to download the metadata, then start the snakefile:
 ```shell
-conda activate vgc_env
+conda activate vrp_env
 snakemake -j 1 -s snake_files/Snakefile_metadata.smk --resources api_calls=2 -p --verbose
 snakemake -s Snakefile_main_denovo.smk -j 8 -p --scheduler greedy --resources api_calls=2 disk_mb=15
 ```

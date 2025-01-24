@@ -10,7 +10,6 @@ All the python scripts that can be found in this repository.
   parse NCBI-SRA metadata based on commandline arguments. 
   - `check_genome_assemblies.py`: helper module
   - `determine_kmer.py`: helper module
-  - `fetch_assembly_path.py`: helper module (redundant script)
 - `find_multiple_hosts.py`: filter NCBI TaxIDs 
   on (sub-) species level.
 - `sra_download.py`: time the downloads of the SRA data and restart if necessary.
@@ -28,10 +27,7 @@ All the python scripts that can be found in this repository.
   completeness in DIAMOND2 alignment files or to patch fragmented viral 
   genome assemblies.
 - [`mapping_stats.py`](#mappingstats): used to determine host genome mapping 
-  stats. 
-- [`obtain_unique_taxids.py`](#obtainuniquetaxidspy): prints all unique host  
-  TaxIDs to the stdout when provided with a list of NCBI-SRA accessions.
-- `obtain_complete_genomes.py`
+  stats based on the log files of the Snakemake workflow.
 
 
 ## Detailed documentation
@@ -139,8 +135,7 @@ format, found at the query ID in the DIAMOND2 alignment files. e.g.
 NODE_1_length_6525_cov_5.871304. It is important that the query ID of every 
 alignment contains the contig length in number of nucleotides at the 4th 
 position when it is split at underscores ('_'). For an example of a 
-DIAMOND2 file in the correct format, see [diamond2_example_file.dmnd]() in this 
-repository. 
+DIAMOND2 file in the correct format.
 
 Dependencies of the script: 
 * Configuration file: [viral_completeness_config.yml](#viralcompletenessconfigyml).
