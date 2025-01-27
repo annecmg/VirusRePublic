@@ -1,6 +1,6 @@
 # Additional data for paper
 
-In this directory, you can find additional data described in the paper LINK
+In this directory, you can find additional data described in the [paper](https://www.biorxiv.org/content/10.1101/2025.01.22.634245v1).
 
 ```
 non-iflaviridae.fasta
