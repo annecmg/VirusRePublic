@@ -1654,7 +1654,7 @@ def main():
                                            run,
                                            config["assembly_ext"])}
 
-    # Step 2.1: determine if the directory for log and temp files exists
+    # Step 2.1: determine if the directory for log, temp and output files exists
     if not os.path.exists(config["log_files"]):
         print(Bcolors.OKGREEN +
               "Directory to store logfiles: '{}' doesn't exits. Creating it "
@@ -1668,6 +1668,13 @@ def main():
               "now!".format(config["temp_files"]) +
               Bcolors.ENDC)
         subprocess.check_output("mkdir {}".format(config["temp_files"]),
+                                shell=True)
+    if not os.path.exists(config["output_fasta_dir"]):
+        print(Bcolors.OKGREEN +
+              "Directory to store output files: '{}' doesn't exits. Creating it "
+              "now!".format(config["log_files"]) +
+              Bcolors.ENDC)
+        subprocess.check_output("mkdir {}".format(config["log_files"]),
                                 shell=True)
 
     # Step 3: append the taxid to the metadata dict of every accession

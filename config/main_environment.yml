@@ -1,4 +1,4 @@
-name: vgc_env
+name: vrp_env
 channels:
   - conda-forge
   - bioconda
@@ -17,3 +17,4 @@ dependencies:
   - spades=3.15.5
   - seqkit
   - diamond
+  - conda-forge::biopython
