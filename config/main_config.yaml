@@ -2,10 +2,10 @@
 # Main config file MSc Thesis Devin van Valkengoed
 # General options that can be changed
 ## Working directory pointing to the GitHub directory
-root_dir: "/home/kupcz001/lustre/iflavirus/pipeline/ViralGenomeConstrictor/"
+root_dir: "/path/to/VirusRePublic/"
 
 ## File that contains the accessions that should be used
-accession_file: "/home/kupcz001/lustre/iflavirus/pipeline/ViralGenomeConstrictor/testing_data/test_accessions.txt"
+accession_file: "/path/to/VirusRePublic/testing_data/test_accessions.txt"
 
 ## Location of main python script and included Snakefiles (relative paths)
 scripts:
