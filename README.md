@@ -165,7 +165,6 @@ snakemake -j 1 -s snake_files/Snakefile_metadata.smk --resources api_calls=2 -p 
 snakemake -s Snakefile_main_denovo.smk -j 8 -p --scheduler greedy --resources api_calls=2 disk_mb=15
 ```
 
-
 ## Running the pipeline with and without host mapping
 
 You can determine automatically which accessions have a host genome:
@@ -187,6 +186,11 @@ snakemake -j 1 -s snake_files/Snakefile_metadata.smk --resources api_calls=2 -p 
 snakemake -s Snakefile_main_denovo.smk -j 8 -p --scheduler greedy --resources api_calls=2 disk_mb=15
 mv output output-nohost
 ```
+
+## Post processing
+
+The folder [python_scripts](python_scripts/README.md) contains files for post-processing the output. 
+Use `DIAMOND_filter.py` and `obtain_complete_genomes.py` to get the contigs that were found to be of viral origin.
 
 # Appendices and additional information
 
