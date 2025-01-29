@@ -94,6 +94,8 @@ options:
 
 This standalone script can be used save all detected nucleotide sequences in a FASTA file. It can be run after [`DIAMOND_filter.py`](#diamond_filterpy).
 
+**Note:** The scripts requires Biopython.
+
 Example usage, where `diamond.txt` was generated as in the example usage of [`DIAMOND_filter.py`](#diamond_filterpy):
 ```
 python python_scripts/obtain_complete_genomes.py -input_accessions output/diamond.txt -input_folder output/assembly/rnaviralspades -nt_output output/nt.fasta
