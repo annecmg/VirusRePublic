@@ -27,7 +27,7 @@ All the python scripts that can be found in this repository.
 - [`viral_completeness.py`](#viral_completenesspy): used to assess viral genome
   completeness in DIAMOND2 alignment files or to patch fragmented viral
   genome assemblies.
-- [`mapping_stats.py`](#mappingstats): used to determine host genome mapping
+- [`mapping_stats.py`](#mapping_statspy): used to determine host genome mapping
   stats based on the log files of the Snakemake workflow.
 
 
@@ -245,12 +245,11 @@ This post-processing script is able to fetch the average read mapping percentage
 based on the log files that are created by the main VirusRePublic Snakemake workflow. By default, it will search for  
 log files in this directory: "/VirusRePublic/output/logs/main_logs". It will then open all log files with a name 
 structure like: "main_<accession_id>.log" and uses 'grep' to obtain the mapping percentage given by HISAT2. 
-Anny accession for which it cannot obtain a mapping percentage, is written to the given "unavailable" ouput file.
+Any accession for which it cannot obtain a mapping percentage, is written to the given "unavailable" ouput file.
 
 Example usage:
 ```
-python3 python_scripts/mapping_stats.py -a testing_data/test_accessions.txt -u output/mapping_stat
-s_unavailable.txt -o output/mapping_percentages.txt
+python3 python_scripts/mapping_stats.py -a testing_data/test_accessions.txt -u output/mapping_stats_unavailable.txt -o output/mapping_percentages.txt
 ```
 ```
 usage: mapping_stats.py [-h] -a ACCESSIONS -u UNAV -o OUTPUT [-b BASE]
@@ -264,7 +263,7 @@ Key arguments:
                         percentage should be determined.
   -u, --unavailable UNAV
                         Pathway to a file where the accessions of which no mapping statistic could be determined are 
-                        writen to.
+                        written to.
   -o, --output OUTPUT   Pathway to the output file where the statistics should be written to.
   
  Optional arguments: 
