@@ -13,7 +13,7 @@ Required arguments:
     -a/--accessions -- str, pathway to a file containing NCBI SRA accessions
                        on every new line.
     -u/--unavailable -- str, pathway to a file where the accessions are
-                        writen to for which no mapping stats could be
+                        written to for which no mapping stats could be
                         determined.
     -o/--output -- str, pathway (and name) of a file to which the output
                    statistics are writen.
