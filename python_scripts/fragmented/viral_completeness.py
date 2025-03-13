@@ -214,7 +214,7 @@ def obtain_taxid(metadata_file):
     Returns:
         taxid -- int, the TaxID belonging to the given metadata file.
     """
-    cmd_obtain_taxid = "cut -d',' -f28 {} | tail -1".format(metadata_file)
+    cmd_obtain_taxid = "cut -d',' -f28 {} 2>/dev/null | tail -1 2>/dev/null".format(metadata_file)
     taxid = subprocess.check_output(cmd_obtain_taxid, shell=True).decode(
         "UTF-8").strip()
 

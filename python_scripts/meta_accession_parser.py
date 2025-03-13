@@ -46,15 +46,11 @@ OPTIONAL:
     * Give option to provide a list of accessions as input?
 """
 # Import statements
-import subprocess
-import sys
 import os.path
 import argparse
-import os
 from datetime import datetime
 from pathlib import Path
 from check_genome_assemblies import *
-from fetch_assembly_path import *
 from determine_kmer import *
 
 

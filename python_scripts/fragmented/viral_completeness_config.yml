@@ -3,7 +3,7 @@
 # General settings
 # Please provide the full path to a file containing NCBI SRA accessions, the diamond protein db and the fasta files
 # with know viral proteins.
-input_accessions: testing_data/test_accessions.txt
+input_accessions: python_scripts/tmp/test_data.txt
 
 temp_files: output/temp_files
 log_files: output/logs/patching
