@@ -3,7 +3,7 @@
 # General settings
 # Please provide the full path to a file containing NCBI SRA accessions, the diamond protein db and the fasta files
 # with know viral proteins.
-input_accessions: python_scripts/tmp/test_data.txt
+input_accessions: output/metadata/stats/filtered_accessions.txt
 
 temp_files: output/temp_files
 log_files: output/logs/patching
@@ -25,7 +25,7 @@ diamond_prot_db: databases/iflav_proteins.dmnd
 diamond_cores: 5
 diamond_blastp_out: output/temp_files
 diamond_loc: output/diamond
-diamond_ext: _picornavirales.dmnd
+diamond_ext: _iflav.dmnd
 
 # Assembly file location and extension
 assembly_loc: output/assembly/rnaviralspades

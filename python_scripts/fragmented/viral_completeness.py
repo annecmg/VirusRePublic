@@ -27,6 +27,7 @@ import os
 import yaml
 import subprocess
 import itertools
+import shutil
 from Bio.Seq import Seq
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
@@ -1697,7 +1698,6 @@ def main():
     # Step 2.1: determine if the directory for log, temp and output files exists
     directories = {
         "log_files": "logfiles",
-        "temp_files": "temp files",
         "output_fasta_dir": "output fastas"
     }
 
@@ -1792,10 +1792,13 @@ def main():
 
     # Print message of patching completion to stdout
     if "patching" in args.subcommand:
+        if os.path.exists(config["temp_files"]):
+            shutil.rmtree(config["temp_files"])
         print(Bcolors.OKGREEN +
               "Patching is finished!\n"
+              "Output files can be found here: {}\n"
               "The following config file was used: '{}'"
-              .format(args.config) +
+              .format(config["output_fasta_dir"], args.config) +
               Bcolors.ENDC)
 
 
