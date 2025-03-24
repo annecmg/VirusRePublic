@@ -1698,6 +1698,7 @@ def main():
     # Step 2.1: determine if the directory for log, temp and output files exists
     directories = {
         "log_files": "logfiles",
+        "temp_files": "temp files",
         "output_fasta_dir": "output fastas"
     }
 
@@ -1797,8 +1798,9 @@ def main():
         print(Bcolors.OKGREEN +
               "Patching is finished!\n"
               "Output files can be found here: {}\n"
+              "Log files can be found here: {}\n"
               "The following config file was used: '{}'"
-              .format(config["output_fasta_dir"], args.config) +
+              .format(config["output_fasta_dir"], config["log_files"], args.config) +
               Bcolors.ENDC)
 
 
