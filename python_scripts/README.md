@@ -198,15 +198,12 @@ usage: python3 viral_completeness.py -c <./config.yml> [-s] [-p] viral_completen
 This command can be used to determine the viral genome completeness and print it to the stdout
 (in tabular format).
 
-Key arguments:
-  -c config.yml         str, relative pathway and name of the config file that can be used by the script
-  -v included_families  str, viral families that should be included in the analysis separated by spaces.
-                        Choose from the following five: [iflaviridae dicistroviridae marnaviridae
-                        picornaviridae secoviridae calciviridae].  
-
 Optional arugments:
   -s      When this option is given, the script will continue running if for some of the input
           accession, no metadata can be found.
+  -v included_families  str, viral families that should be included in the analysis separated by spaces.
+                        Choose from the following five: [iflaviridae dicistroviridae marnaviridae
+                        picornaviridae secoviridae calciviridae]. 
   -p      This option will make the script print the output to the screen.  
 ```
 
@@ -220,18 +217,14 @@ python3 python_scripts/fragmented/viral_completeness.py -s patching
 usage: python3 viral_completeness.py -c <./config.yml> [-s] [-p] patching [-r] -v <included_families>
 
 This command can be used to patch fragmented genome assemblies, based on the alignment positions
-in the provided DIAMOND2 files.
-
-Key arguments:
-  -c config.yml         str, relative pathway and name of the config file that can be used by the script
-  -v included_families  str, viral families that should be included in the analysis separated by spaces.
-                        Choose from the following five: [iflaviridae dicistroviridae marnaviridae
-                        picornaviridae secoviridae calciviridae].  
+in the provided DIAMOND2 files. 
 
 Optional arguments:
   -s      When this option is given, the script will continue running if for some of the input
           accession, no metadata can be found.
-  -p      This option will make the script print the output to the screen.
+  -v included_families  str, viral families that should be included in the analysis separated by spaces.
+                        Choose from the following five: [iflaviridae dicistroviridae marnaviridae
+                        picornaviridae secoviridae calciviridae]. 
   -r      This option will make the script always re-run all steps.
           Normally, when the script is re-run, it will check for the presence
           of the translated protein and blastp output files. If the files
