@@ -18,3 +18,4 @@ dependencies:
   - seqkit
   - diamond
   - conda-forge::biopython
+  - bioconda::emboss
