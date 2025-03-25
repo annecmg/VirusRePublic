@@ -33,7 +33,7 @@ file is provided called: `main_environment.yml` which contains all tools
 and version specifics. This file can be used to [set up and activate a 
 suitable Conda environment](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file).
 
-To create the environment, run the code below: 
+To create the environment, run the code below (required space: ± 7Gb): 
 ```
 mamba env create --prefix /desired/location/my_env_name -f ./config/main_environment.yml
 ```
@@ -64,6 +64,10 @@ in the appendix.
 - [Local DIAMOND2 protein database](#local-diamond2-protein-database)
 
 ## Snakemake workflow setup and configuration
+Change the following two lines in `config/main_config.yml`:
+* `root_dir:` the absolute path to the main folder of this GitHub repo
+* `accession_file:` the absolute path to the input libraries.
+This file contains library accessions on every new line. 
 
 The main configuration file that is used by the workflow can be found at
 `config/main_config.yaml`. This file is used by the workflow to determine where to 
@@ -71,18 +75,8 @@ find all the data (e.g. metadata that is downloaded) and where to store all
 the intermediate and final output data (e.g. assembly and DIAMOND files). 
 It is advised to download all the scripts in this repository and keep the 
 file structure like it is now, only change the in and output directories 
-when running the workflow.  
-Please make sure that the full path and name to this config file is 
-provided in the first line of code in the `Snakefile_main.smk` like this: 
-```configfile pointer
-configfile: "/my_directory/for_config_files/main_config.yaml"
-```
+when running the workflow.
 An explanation about all parameters in the file is [here](#main_configyaml).
-
-Change the following two lines in `main_config.yml`:
-* `root_dir:` the absolute path to the main folder of this GitHub repo
-* `accession_file:` the absolute path to the input libraries.
-This file contains library accessions on every new line. 
 
 ## Metadata
 

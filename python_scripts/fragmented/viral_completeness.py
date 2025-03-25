@@ -2,6 +2,7 @@
 """Author: Devin van Valkengoed
 
 Date: 06-Jun-2023
+      13-Feb-2025 V2.0
 Description: This script can be used to determine the viral completeness of
              assembled genomes using DIAMOND files. A config file is
              required to set viral family specific cut-offs.
@@ -22,17 +23,17 @@ Run: 'python3 viral_completeness.py viral_completeness/patching -h' to show
 """
 # Import statements
 import argparse
-import sys
-import os.path
+import os
 import yaml
 import subprocess
 import itertools
-import re
+import shutil
 from Bio.Seq import Seq
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from collections import OrderedDict
 from datetime import datetime
+from pathlib import Path
 
 
 # Create a class to be able to print coloured messages to the stdout
@@ -48,6 +49,36 @@ class Bcolors:
     UNDERLINE = '\033[4m'
 
 
+# Add the default root dir and config root based on the GitHub repo structure
+def get_git_root():
+    try:
+        return Path(subprocess.check_output(["git", "rev-parse", "--show-toplevel"],
+                                       stderr=subprocess.DEVNULL).strip().decode("utf-8"))
+    except subprocess.CalledProcessError:
+        return Path(os.getcwd())
+
+
+def resolve_path(path):
+    """Convert relative paths to absolute paths based on ROOT_DIR."""
+    if os.path.isabs(path):
+        return path
+    return os.path.join(ROOT_DIR, path)
+
+
+def create_directory(path, description):
+    """Create a directory if it doesn't exist and print a message."""
+    if not os.path.exists(path):
+        print(Bcolors.OKGREEN +
+              f"Directory to store {description}: '{path}' doesn't exist. Creating it now!" +
+              Bcolors.ENDC)
+        os.makedirs(path, exist_ok=True)
+
+
+# Global variables
+ROOT_DIR = get_git_root()
+DEFAULT_CONFIG_PATH = ROOT_DIR / "python_scripts/fragmented/viral_completeness_config.yml"
+
+
 # Commandline, config and log file functions
 def parsing_cmd():
     """Uses argparse to determine the given commandline options
@@ -60,11 +91,6 @@ def parsing_cmd():
                     "assemblies. The patching is done by trimming and joining "
                     "contigs based on DIAMOND2 nt and protein alignments. "
                     "A config file is required.")
-    parser.add_argument("-c", "--config",
-                        help="The relative pathway to a config file that "
-                             "contains all information about file locations "
-                             "user settings. File should be in YAML format.",
-                        metavar="<./config.yml>", dest="config", required=True)
     parser.add_argument("-s", "--safe", help="This mode will remove "
                                              "accessions from which the "
                                              "metadata or diamond files are "
@@ -76,9 +102,15 @@ def parsing_cmd():
                                               "extra information to stdout "
                                               "during the process. ",
                         action="store_true", dest="print")
+    parser.add_argument("-c", "--config",
+                        help="The relative pathway to a config file that "
+                             "contains all information about file locations "
+                             "user settings. File should be in YAML format.",
+                        metavar="<./config.yml>", dest="config", type=str, default=DEFAULT_CONFIG_PATH)
     subparser = parser.add_subparsers(title="Subcommands",
                                       description="Valid subcommands",
-                                      dest="main_parser")
+                                      dest="subcommand",
+                                      required=True)
 
     # Subcommands
     # Viral completeness (vc)
@@ -109,23 +141,22 @@ def parsing_cmd():
                                                 "diamond file that contains "
                                                 "fragmented genomes.")
     patching_parser.add_argument("-v", "--viral_fam",
-                                 help="Names of the viral families that "
-                                      "should be included in patching "
-                                      "and/or while determining viral "
-                                      "completeness.  Multiple families can "
-                                      "be given, separated by spaces. E.g. "
-                                      "iflaviridae secoviridae. By default "
-                                      "the six main families within the "
-                                      "Picornavirales order will be included: "
-                                      "Iflaviridae, Dicistroviridae, "
-                                      "Marnaviridae, Picornaviridae, "
-                                      "Secoviridae and Calciviridae.",
+                                 help="Names of the viral families that should be "
+                                "included in patching and/or while "
+                                "determining viral completeness. "
+                                "Multiple families can be given, separated by "
+                                "spaces. E.g. iflaviridae secoviridae. "
+                                "By default only viruses belonging to the Iflaviridae will get patched.",
                                  metavar="<included_families>",
                                  dest="included_fam",
                                  nargs="+")
     patching_parser.add_argument("-r", "--reset",
-                                 help="If this option is given, "
-                                      "any output files will created again.",
+                                 help="This option will make the script always re-run all steps. "
+                                      "Normally, when the script is re-run, it will check for the presence "
+                                      "of the translated protein and blastp output files. If the files"
+                                      "are already present, these steps will be skipped, to safe time"
+                                      "and computation power. This option will always created new"
+                                      "translated protein files and redo the DIAMOND2 blastp alignments.",
                                  action="store_true", dest="reset")
 
     return parser
@@ -184,7 +215,7 @@ def obtain_taxid(metadata_file):
     Returns:
         taxid -- int, the TaxID belonging to the given metadata file.
     """
-    cmd_obtain_taxid = "cut -d',' -f28 {} | tail -1".format(metadata_file)
+    cmd_obtain_taxid = "cut -d',' -f28 {} 2>/dev/null | tail -1 2>/dev/null".format(metadata_file)
     taxid = subprocess.check_output(cmd_obtain_taxid, shell=True).decode(
         "UTF-8").strip()
 
@@ -454,7 +485,7 @@ def obtain_target_alignments(diamond_dict, target):
     for alignment in diamond_dict:
         if diamond_dict[alignment][0] == target:
             query_alignments[alignment] = {"dmnd_params":
-                                           diamond_dict[alignment][:-1]}
+                                               diamond_dict[alignment][:-1]}
 
     return query_alignments
 
@@ -746,7 +777,7 @@ def fetch_prot_len(protein_id):
     Please note that the obtained length is based on the information given
     on the NCBI protein page and doesn't involve a sequence count.
     """
-    prot_info_cmd = "efetch -db protein -id {} -format info | grep LOCUS"\
+    prot_info_cmd = "efetch -db protein -id {} -format info | grep LOCUS" \
         .format(protein_id)
 
     prot_info = subprocess.check_output(prot_info_cmd, shell=True).decode(
@@ -875,7 +906,7 @@ def initiate_patch_log(args, log_file, accession, config_dict,
         # Set the current date and time
         now = datetime.now()
         current_time = now.strftime("%d-%b-%Y %H:%M:%S")
-        out_file.write("\n"*2 + current_time + "\n")
+        out_file.write("\n" * 2 + current_time + "\n")
 
         # Print message if this accession has been patched before
         if rerun:
@@ -883,7 +914,7 @@ def initiate_patch_log(args, log_file, accession, config_dict,
                            "PATCHING WAS DONE BEFORE!\n")
 
         # Initial logfile message
-        start_message = "This is the patch log of accession: '{}'.\n"\
+        start_message = "This is the patch log of accession: '{}'.\n" \
             .format(accession)
         second_line = "All information about the patching process will be " \
                       "stored in this file.\nPlease not that if the script " \
@@ -1064,7 +1095,7 @@ def execute_contig_patch(contig_name, genome_template, contig_sequence,
             .format(len(contig_aligned_seq)) +
             "query_start\tquery_end\ttemplate_start\ttemplate_end: \n"
             "{:<16}{:<16}{:<16}{}".format(query_start, query_end,
-                                            template_start, template_end),
+                                          template_start, template_end),
             None, log_file)
 
     # Loop over the template and contig sequence and fill the template if X
@@ -1232,17 +1263,17 @@ def viral_completeness_wrapper(diamond_dict, config_dict,
      """
     # Determine the known proteins for every viral family based on configfile
     known_proteins = {"iflaviridae": line_parser(
-                          config_dict["iflaviridae"]["known_proteins"]),
-                      "dicistroviridae": line_parser(
-                          config_dict["dicistroviridae"]["known_proteins"]),
-                      "marnaviridae": line_parser(
-                          config_dict["marnaviridae"]["known_proteins"]),
-                      "picornaviridae": line_parser(
-                          config_dict["picornaviridae"]["known_proteins"]),
-                      "secoviridae": line_parser(
-                          config_dict["secoviridae"]["known_proteins"]),
-                      "calciviridae": ["QKW94212.1"]
-                      }
+        config_dict["iflaviridae"]["known_proteins"]),
+        "dicistroviridae": line_parser(
+            config_dict["dicistroviridae"]["known_proteins"]),
+        "marnaviridae": line_parser(
+            config_dict["marnaviridae"]["known_proteins"]),
+        "picornaviridae": line_parser(
+            config_dict["picornaviridae"]["known_proteins"]),
+        "secoviridae": line_parser(
+            config_dict["secoviridae"]["known_proteins"]),
+        "calciviridae": ["QKW94212.1"]
+    }
 
     # Check whether the alignments should be filtered based on %ID * align_len
     if not viral_filter:
@@ -1256,7 +1287,7 @@ def viral_completeness_wrapper(diamond_dict, config_dict,
     # Check if there are any alignments
     if len(fetch_unique_nodes(diamond_dict)) < 1:
         print_viral_completeness(accession, 0, "no_filtered_alignments",
-                                 "NA", "NA" + "\tNA"*11)
+                                 "NA", "NA" + "\tNA" * 11)
         return
 
     # Loop over the diamond file to determine the viral completeness
@@ -1595,7 +1626,7 @@ def patching_wrapper(args, diamond_dict, config_dict, config_file_loc,
 
     # Print message to logfile and stdout
     c_print("\n" + "\u2304" * 70 + "\n"
-            "\t\t\tFINISHED\n" +
+                                   "\t\t\tFINISHED\n" +
             "Patching is done, no more alignments left in this "
             "diamond file!\n" +
             "STATISTICS FOR THIS ACCESSION:\n"
@@ -1620,6 +1651,7 @@ def patching_wrapper(args, diamond_dict, config_dict, config_file_loc,
 def main():
     """Main function that wraps all the code in this script """
     # Step 0.0: parsing the cmd line arguments and config file
+    import sys
     parser = parsing_cmd()
     args = parser.parse_args()
     config = config_parsing(args.config)
@@ -1627,6 +1659,15 @@ def main():
           "The script is started correctly, please wait while it is "
           "running!" +
           Bcolors.ENDC)
+
+    # Step 0.1: resolve all the pathfiles given in the conig file
+    paths = ["input_accessions", "temp_files", "log_files", "metadata_loc", "diamond_prot_db",
+             "diamond_blastp_out", "diamond_loc", "assembly_loc", "output_fasta_dir"]
+    protein_families = ["iflaviridae", "dicistroviridae", "marnaviridae", "picornaviridae", "secoviridae"]
+    for path in paths:
+        config[path] = resolve_path(config[path])
+    for family in protein_families:
+        config[family]["known_proteins"] = resolve_path(config[family]["known_proteins"])
 
     # Step 1: obtain the accessions from the input file
     accessions = line_parser(config["input_accessions"])
@@ -1645,8 +1686,8 @@ def main():
             {"metadata": "{}/{}{}".format(config["metadata_loc"],
                                           run,
                                           config["metadata_ext"]),
-             "logfile": "{}/{}_patch.log".format(config["log_files"],
-                                                 run),
+             "logfile": Path("{}/{}_patch.log".format(config["log_files"],
+                                                 run)),
              "diamond": "{}/{}{}".format(config["diamond_loc"],
                                          run,
                                          config["diamond_ext"]),
@@ -1655,27 +1696,15 @@ def main():
                                            config["assembly_ext"])}
 
     # Step 2.1: determine if the directory for log, temp and output files exists
-    if not os.path.exists(config["log_files"]):
-        print(Bcolors.OKGREEN +
-              "Directory to store logfiles: '{}' doesn't exits. Creating it "
-              "now!".format(config["log_files"]) +
-              Bcolors.ENDC)
-        subprocess.check_output("mkdir {}".format(config["log_files"]),
-                                shell=True)
-    if not os.path.exists(config["temp_files"]):
-        print(Bcolors.OKGREEN +
-              "Directory to store temp files: '{}' doesn't exits. Creating it "
-              "now!".format(config["temp_files"]) +
-              Bcolors.ENDC)
-        subprocess.check_output("mkdir {}".format(config["temp_files"]),
-                                shell=True)
-    if not os.path.exists(config["output_fasta_dir"]):
-        print(Bcolors.OKGREEN +
-              "Directory to store output files: '{}' doesn't exits. Creating it "
-              "now!".format(config["log_files"]) +
-              Bcolors.ENDC)
-        subprocess.check_output("mkdir {}".format(config["log_files"]),
-                                shell=True)
+    directories = {
+        "log_files": "logfiles",
+        "temp_files": "temp files",
+        "output_fasta_dir": "output fastas"
+    }
+
+    # Loop over the directories to create
+    for key, desc in directories.items():
+        create_directory(config[key], desc)
 
     # Step 3: append the taxid to the metadata dict of every accession
     metadata_pop = []
@@ -1697,7 +1726,7 @@ def main():
         metadata_dict.pop(key)
 
     # Print message for stdout, if viral completeness should be determined
-    if "viral_completeness" in args.main_parser:
+    if "viral_completeness" in args.subcommand:
         if not args.included_fam:
             print(Bcolors.OKGREEN +
                   "The alignments are filtered for a minimum product "
@@ -1712,7 +1741,7 @@ def main():
                   Bcolors.ENDC)
 
     # Print message to stdout when patching
-    if "patching" in args.main_parser:
+    if "patching" in args.subcommand:
         print(Bcolors.OKGREEN +
               "Now starting the patching process, please wait!" +
               Bcolors.ENDC)
@@ -1753,21 +1782,25 @@ def main():
 
         # Check subcommands, either viral_completeness or patching
         # Check the viral completeness per accession based on the family
-        if "viral_completeness" in args.main_parser:
+        if "viral_completeness" in args.subcommand:
             viral_completeness_wrapper(diamond_dict, config, accession,
                                        args.included_fam)
         # Patch the fragmented genomes
-        elif "patching" in args.main_parser:
+        elif "patching" in args.subcommand:
             patching_wrapper(args, diamond_dict, config, args.config,
                              accession, metadata_dict, args.included_fam,
                              args.print, args.reset)
 
     # Print message of patching completion to stdout
-    if "patching" in args.main_parser:
+    if "patching" in args.subcommand:
+        if os.path.exists(config["temp_files"]):
+            shutil.rmtree(config["temp_files"])
         print(Bcolors.OKGREEN +
               "Patching is finished!\n"
+              "Output files can be found here: {}\n"
+              "Log files can be found here: {}\n"
               "The following config file was used: '{}'"
-              .format(args.config) +
+              .format(config["output_fasta_dir"], config["log_files"], args.config) +
               Bcolors.ENDC)
 
 

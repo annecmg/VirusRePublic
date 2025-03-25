@@ -27,7 +27,7 @@ All the python scripts that can be found in this repository.
 - [`viral_completeness.py`](#viral_completenesspy): used to assess viral genome
   completeness in DIAMOND2 alignment files or to patch fragmented viral
   genome assemblies.
-- [`mapping_stats.py`](#mappingstats): used to determine host genome mapping
+- [`mapping_stats.py`](#mapping_statspy): used to determine host genome mapping
   stats based on the log files of the Snakemake workflow.
 
 
@@ -46,7 +46,7 @@ separate text files. It will then continue the workflow and download only the
 data of the libraries that contain paired-end reads.
 
 ### DIAMOND_filter.py
-This standalone python script can be used to filter tabular DIAMOND output files. DIAMOND files can be given as input
+This standalone postprocessing python script can be used to filter tabular DIAMOND output files. DIAMOND files can be given as input
 using file paths (separated by spaces) or by providing a complete folder in which all DIAMOND files should be used.
 The filtered output can be printed to stdout, or written to a given output file. When the option '-q' or '--quiet'
 is provided, the script only provides the original tabular output (after filtering) and does not provide headers or file names.
@@ -92,7 +92,7 @@ options:
 
 ### obtain_complete_genomes.py
 
-This standalone script can be used save all detected nucleotide sequences in a FASTA file. It can be run after [`DIAMOND_filter.py`](#diamond_filterpy).
+This standalone postprocessing script can be used save all detected nucleotide sequences in a FASTA file. It can be run after [`DIAMOND_filter.py`](#diamond_filterpy).
 
 **Note:** The scripts requires Biopython.
 
@@ -123,14 +123,14 @@ options:
 
 ### fetch_protein_seq.py
 
-This standalone script can be used to fetch protein sequences in FASTA format from NCBI.
+This standalone postprocessing script can be used to fetch protein sequences in FASTA format from NCBI.
 It will print a multi-fasta to the screen.
 
 Usage: `python3 fetch_protein_seq.py sequences_in.txt > output.fasta`, where
 `sequences_in.txt` is a file with an NCBI protein IDs on every line.
 
 ### viral_completeness.py
-This standalone python script can be used to determine the completeness of
+This standalone postprocessing python script can be used to determine the completeness of
 *Iflaviridae* genomes found in the output DIAMOND2 alignment files. It can
 also be used to 'patch' fragmented viral genomes. This script needs
 `viral_completeness_config.yml` to run. All parameters in this config file
@@ -166,8 +166,16 @@ length of every contig. This is done using the FASTA header in SPAdes
 format, found at the query ID in the DIAMOND2 alignment files. e.g.
 NODE_1_length_6525_cov_5.871304. It is important that the query ID of every
 alignment contains the contig length in number of nucleotides at the 4th
-position when it is split at underscores ('_'). For an example of a
-DIAMOND2 file in the correct format.
+position when it is split at underscores ('_'). An example of a valid DIAMOND file can be found below (tab separated) 
+or here: [diamond2_example_file.dmnd](https://github.com/annecmg/VirusRePublic/blob/main/python_scripts/fragmented/diamond2_example_file.dmnd)
+
+| query_accession | target_accession | sequence_identity | length | mismatches | gap_opening | query_start | query_end | target_start | target_end | e-value | bit_score |
+|-----------------|------------------|-------------------|--------|------------|-------------|-------------|-----------|--------------|------------|---------|-----------|
+|NODE_2_length_4477_cov_24.218182|AHA85557.1|54.1|1193|503|14|3767|219|4|1162|0|1233|
+|NODE_2_length_4477_cov_24.218182|AUD08116.1|53|1208|532|13|3791|222|5|1194|0|1209|
+|NODE_4_length_3878_cov_22.812944|AHA85556.1|58.3|1290|525|9|3877|29|909|2192|0|1499|
+|NODE_4_length_3878_cov_22.812944|QAX90632.1|62.9|1134|413|7|3877|494|909|2040|0|1434|
+
 
 Dependencies of the script:
 * Configuration file: [viral_completeness_config.yml](#viralcompletenessconfigyml).
@@ -179,45 +187,80 @@ Dependencies of the script:
   (for patching only).
 
 Determine *Iflaviridae* genome completeness based on DIAMOND2 alignment files:
+
+Example usage obtaining viral_completeness: 
+```
+python3 python_scripts/fragmented/viral_completeness.py -s viral_completeness
+```
 ```
 usage: python3 viral_completeness.py -c <./config.yml> [-s] [-p] viral_completeness -v <included_families>
 
 This command can be used to determine the viral genome completeness and print it to the stdout
 (in tabular format).
 
-Key arguments:
-  -c config.yml         str, relative pathway and name of the config file that can be used by the script
-  -v included_families  str, viral families that should be included in the analysis separated by spaces.
-                        Choose from the following five: [iflaviridae dicistroviridae marnaviridae
-                        picornaviridae secoviridae calciviridae].  
-
 Optional arugments:
   -s      When this option is given, the script will continue running if for some of the input
           accession, no metadata can be found.
+  -v included_families  str, viral families that should be included in the analysis separated by spaces.
+                        Choose from the following five: [iflaviridae dicistroviridae marnaviridae
+                        picornaviridae secoviridae calciviridae]. 
   -p      This option will make the script print the output to the screen.  
 ```
 
 Determine the viral completeness and patch fragmented *Iflaviridae* genomes:
+
+Example usage checking and patching the given alignments: 
+```
+python3 python_scripts/fragmented/viral_completeness.py -s patching
+```
 ```
 usage: python3 viral_completeness.py -c <./config.yml> [-s] [-p] patching [-r] -v <included_families>
 
 This command can be used to patch fragmented genome assemblies, based on the alignment positions
-in the provided DIAMOND2 files.
-
-Key arguments:
-  -c config.yml         str, relative pathway and name of the config file that can be used by the script
-  -v included_families  str, viral families that should be included in the analysis separated by spaces.
-                        Choose from the following five: [iflaviridae dicistroviridae marnaviridae
-                        picornaviridae secoviridae calciviridae].  
+in the provided DIAMOND2 files. 
 
 Optional arguments:
   -s      When this option is given, the script will continue running if for some of the input
           accession, no metadata can be found.
-  -p      This option will make the script print the output to the screen.
+  -v included_families  str, viral families that should be included in the analysis separated by spaces.
+                        Choose from the following five: [iflaviridae dicistroviridae marnaviridae
+                        picornaviridae secoviridae calciviridae]. 
   -r      This option will make the script always re-run all steps.
           Normally, when the script is re-run, it will check for the presence
           of the translated protein and blastp output files. If the files
           are already present, these steps will be skipped, to safe time
           and computation power. This option will always created new
           translated protein files and redo the DIAMOND2 blastp alignments.
+```
+
+### mapping_stats.py
+This post-processing script is able to fetch the average read mapping percentage per accession, 
+based on the log files that are created by the main VirusRePublic Snakemake workflow. By default, it will search for  
+log files in this directory: "/VirusRePublic/output/logs/main_logs". It will then open all log files with a name 
+structure like: "main_<accession_id>.log" and uses 'grep' to obtain the mapping percentage given by HISAT2. 
+Any accession for which it cannot obtain a mapping percentage, is written to the given "unavailable" ouput file.
+
+Example usage:
+```
+python3 python_scripts/mapping_stats.py -a testing_data/test_accessions.txt -u output/mapping_stats_unavailable.txt -o output/mapping_percentages.txt
+```
+```
+usage: mapping_stats.py [-h] -a ACCESSIONS -u UNAV -o OUTPUT [-b BASE]
+
+This script determines the mapping statistics per accession based on the log files that are produced when running 
+the main 'VirusRePublic' Snakemake pipeline.
+
+Key arguments:
+  -a, --accessions ACCESSIONS
+                        Pathway to a file containing NCBI-SRA accessions on every new line, of which the mapping 
+                        percentage should be determined.
+  -u, --unavailable UNAV
+                        Pathway to a file where the accessions of which no mapping statistic could be determined are 
+                        written to.
+  -o, --output OUTPUT   Pathway to the output file where the statistics should be written to.
+  
+ Optional arguments: 
+  -h, --help            show this help message and exit
+  -b, --base BASE       Base directory to the log files that are created by the Snakemake workflow 
+                        (named main_<accession_id>.log)
 ```

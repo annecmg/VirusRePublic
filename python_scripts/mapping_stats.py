@@ -3,6 +3,7 @@
 
 Date: 25-Apr-2023
       24-Jan-2025: v2.0
+      10-Feb-2025: v2.1 (minor changes/improvements mainly on the file paths.)
 Description: script that can be used to determine the mapping statistics used
              when raw sequencing reads are mapped against a reference genome.
 
@@ -11,44 +12,42 @@ Usage: python3 mapping_stats.py [-h] -a ACCESSIONS -b BASE -u UNAV -o OUTPUT
 Required arguments:
     -a/--accessions -- str, pathway to a file containing NCBI SRA accessions
                        on every new line.
-    -b/--base -- str, pathway to the base location where the log files are
-                 stored.
     -u/--unavailable -- str, pathway to a file where the accessions are
-                        writen to for which no mapping stats could be
+                        written to for which no mapping stats could be
                         determined.
     -o/--output -- str, pathway (and name) of a file to which the output
                    statistics are writen.
 
 Optional arguments:
+    -b/--base -- str, pathway to the base location where the log files are
+                 stored.
     -h/--help -- str, show help message and exit.
 
 """
 # Import statements
 import subprocess
 import argparse
-import sys
+from pathlib import Path
+
+# Set the default relative log file directory based on the Snakemake workflow output
+SCRIPT_DIR = Path(__file__).resolve().parent
+DEFAULT_LOG_DIR = SCRIPT_DIR / "../output/logs/main_logs"
 
 
 # Commandline parsing
 def parsing_cmd_line():
     """Uses argparse to obtain the commandline arguments """
     parser = argparse.ArgumentParser(description="This script determines the "
-                                                 "average mapping statistics "
-                                                 "per taxonomic host based "
+                                                 "mapping statistics per accession based "
                                                  "on the log files that are "
                                                  "produced when running the "
-                                                 "main 'iflavirus paper' "
+                                                 "main 'VirusRePublic' "
                                                  "Snakemake pipeline. ")
     parser.add_argument("-a", "--accessions", type=str, required=True,
                         help="Pathway to a file containing NCBI-SRA "
                              "accessions on every new line, of which the "
                              "mapping percentage should be determined.",
                         dest="accessions")
-    parser.add_argument("-b", "--base", type=str, required=True,
-                        help="Pathway to a folder containing all the "
-                             "logfiles where the mapping percentage is "
-                             "stored in.",
-                        dest="base")
     parser.add_argument("-u", "--unavailable", type=str, required=True,
                         help="Pathway to a file where the accessions of "
                              "which no mapping statistic could be determined "
@@ -58,6 +57,10 @@ def parsing_cmd_line():
                         help="Pathway to the output file where the "
                              "statistics should be written to.",
                         dest="output")
+    parser.add_argument("-b", "--base", type=str, default=DEFAULT_LOG_DIR,
+                        help="Base directory to the log files that are created by the Snakemake workflow (named "
+                             "main_<accession_id>.log)",
+                        dest="base")
 
     return parser
 
@@ -146,30 +149,39 @@ def main():
     # Step 0.0: parse the commandline arguments
     parser = parsing_cmd_line()
     args = parser.parse_args()
+    args.base = Path(args.base)
     print("Determining the mapping statistics for the given accessions in "
           "file: '{}'. Please wait!".format(args.accessions))
 
     # Step 1: read all the given accessions
     accessions = line_parser(args.accessions)
 
-    # Step 2: loop through the individual accessions, determine mapping stats
+    # Step 2: check if the log files are present
+    log_files = list(args.base.glob("*main*.log"))
+
+    if not log_files:
+        raise FileNotFoundError("No log files with the name: 'main_<accession_id>.log' were found in the given "
+                                "log file directory! Please check if the files are there or give another directory "
+                                "using argument: '-b /my_logfile/dir/'")
+
+    # Step 3: loop through the individual accessions, determine mapping stats
     mapping_stats = []
 
     for acc in accessions:
-        logfile_location = "{}main_{}.log".format(args.base, acc)
+        logfile_location = args.base / "main_{}.log".format(acc)
 
         # Try to determine the mapping percentage, if not write to unavailable
         try:
             mapping_perc = determine_mapping_percentage(logfile_location)
             mapping_stats.append(f"{acc}\t{mapping_perc}")
         except subprocess.CalledProcessError:
-            write_line(acc, args.unav)
-            continue
+            with open(args.unav, 'w+') as unavailable:
+                unavailable.write(str(acc) + "\n")
 
         # Step 3: Write the mapping statistics to the output file
         write_output(mapping_stats, args.output)
 
-        print("Mapping statistics have been written to '{}'.".format(args.output))
+    print("Mapping statistics have been written to '{}'.".format(args.output))
 
 
 if __name__ == '__main__':

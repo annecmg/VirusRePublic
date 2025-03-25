@@ -3,10 +3,10 @@
 # General settings
 # Please provide the full path to a file containing NCBI SRA accessions, the diamond protein db and the fasta files
 # with know viral proteins.
-input_accessions: </home/my_input_accessions.txt>
+input_accessions: output/metadata/stats/filtered_accessions.txt
 
 temp_files: output/temp_files
-log_files: output/logs
+log_files: output/logs/patching
 
 # Filter settings
 min_p_id_alnlen: 30000
@@ -21,11 +21,11 @@ metadata_loc: output/metadata/paired_accessions
 metadata_ext: _metadata.txt
 
 # Diamond file location and extension
-diamond_prot_db: <bin/protein_db/picorna_proteins_complete.dmnd>
+diamond_prot_db: databases/iflav_proteins.dmnd
 diamond_cores: 5
 diamond_blastp_out: output/temp_files
 diamond_loc: output/diamond
-diamond_ext: _picornavirales.dmnd
+diamond_ext: _iflav.dmnd
 
 # Assembly file location and extension
 assembly_loc: output/assembly/rnaviralspades
@@ -36,27 +36,27 @@ output_fasta_dir: output/fragmented_genomes
 
 # Parameters per viral family
 iflaviridae:
-    known_proteins: <bin/protein_db/iflaviridae_proteins_08may2023.seq>
+    known_proteins: databases/iflaviridae_proteins_08may2023.seq
     min_genome_len: 8000
     max_genome_len: 12000
 
 dicistroviridae:
-    known_proteins: <bin/protein_db/dicistroviridae_proteins_08may2023.seq>
+    known_proteins: databases/dicistroviridae_proteins_08may2023.seq
     min_genome_len: 7000
     max_genome_len: 11000
 
 marnaviridae:
-    known_proteins: <bin/protein_db/marnaviridae_proteins_08may2023.seq>
+    known_proteins: databases/marnaviridae_proteins_08may2023.seq
     min_genome_len: 7600
     max_genome_len: 10600
 
 picornaviridae:
-    known_proteins: <bin/protein_db/picornaviridae_proteins_08may2023.seq>
+    known_proteins: databases/picornaviridae_proteins_08may2023.seq
     min_genome_len: 5700
     max_genome_len: 10100
 
 secoviridae:
-    known_proteins: <bin/protein_db/secoviridae_proteins_08may2023.seq>
+    known_proteins: databases/secoviridae_proteins_08may2023.seq
     min_genome_len: 8000
     max_genome_len: 14700
 

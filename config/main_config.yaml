@@ -1,5 +1,5 @@
 ---
-# Main config file MSc Thesis Devin van Valkengoed
+# Main config file VirusRePublic workflow
 # General options that can be changed
 ## Working directory pointing to the GitHub directory
 root_dir: "/path/to/VirusRePublic/"
