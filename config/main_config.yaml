@@ -29,6 +29,7 @@ scripts:
 
   ## name of the snakefile to download the SRA data
   downloading_snakefile: "snake_files/Snakefile_downloading.smk"
+  downloading_single_snakefile: "snake_files/Snakefile_downloading_single.smk"
 
   ## name of the snakefile to download the host genomes
   host_genome_snakefile: "snake_files/Snakefile_host_genomes.smk"

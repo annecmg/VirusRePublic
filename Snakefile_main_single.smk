@@ -49,7 +49,7 @@ min_version("5.2.0")
 
 ######################### Include statements ##################################
 # make sure the location of these scripts is relative to this main script!
-include: config["scripts"]["downloading_snakefile"] # download SRA files
+include: config["scripts"]["downloading_single_snakefile"] # download SRA files
 include: config["scripts"]["host_genome_snakefile"] # download host genomes
 include: config["scripts"]["read_processing_single_snakefile"] # processing of reads
 
