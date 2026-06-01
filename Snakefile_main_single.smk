@@ -176,7 +176,7 @@ rule all:
                    read_lines(config["root_dir"] +
                               config["metadata"]["meta_root"] +
                               config["metadata"]["stats"] +
-                              config["metadata"]["filtered_accessions"])
+                              config["metadata"]["single_file"])
                )
         ),
         # # FastP trimming (read processing Snakefile)
@@ -216,20 +216,20 @@ rule all:
         #                       config["metadata"]["stats"] +
         #                       config["metadata"]["filtered_accessions"])),
         # rnaviralSPAdes/metaSPAdes assembly
-        expand(config["root_dir"] + config["assembly_dir"] +
-               "{tool}/{accession}/contigs.fasta",
-               tool=config["assembly"]["tool"].lower(),
-            accession=read_lines(config["root_dir"] +
-                                 config["metadata"]["meta_root"] +
-                                 config["metadata"]["stats"] +
-                                 config["metadata"]["filtered_accessions"])),
+        #expand(config["root_dir"] + config["assembly_dir"] +
+        #       "{tool}/{accession}/contigs.fasta",
+        #       tool=config["assembly"]["tool"].lower(),
+        #    accession=read_lines(config["root_dir"] +
+        #                         config["metadata"]["meta_root"] +
+        #                         config["metadata"]["stats"] +
+        #                         config["metadata"]["single_file"])),
         # DIAMOND2
         expand(config["root_dir"] + config["diamond_dir"] +
                "{accession}_" + config["diamond"]["name"] + ".dmnd",
             accession=read_lines(config["root_dir"] +
                                  config["metadata"]["meta_root"] +
                                  config["metadata"]["stats"] +
-                                 config["metadata"]["filtered_accessions"]))
+                                 config["metadata"]["single_file"]))
 
 
 ##################### Assembly using SPAdes/Trinity ###########################

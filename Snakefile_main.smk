@@ -216,13 +216,13 @@ rule all:
         #                       config["metadata"]["stats"] +
         #                       config["metadata"]["filtered_accessions"])),
         # rnaviralSPAdes/metaSPAdes assembly
-        expand(config["root_dir"] + config["assembly_dir"] +
-               "{tool}/{accession}/contigs.fasta",
-               tool=config["assembly"]["tool"].lower(),
-               accession=read_lines(config["root_dir"] +
-                              config["metadata"]["meta_root"] +
-                              config["metadata"]["stats"] +
-                              config["metadata"]["filtered_accessions"])),
+        #expand(config["root_dir"] + config["assembly_dir"] +
+        #       "{tool}/{accession}/contigs.fasta",
+        #       tool=config["assembly"]["tool"].lower(),
+        #       accession=read_lines(config["root_dir"] +
+        #                      config["metadata"]["meta_root"] +
+        #                      config["metadata"]["stats"] +
+        #                      config["metadata"]["filtered_accessions"])),
         # DIAMOND2
         expand(config["root_dir"] + config["diamond_dir"] +
                "{accession}_" + config["diamond"]["name"] + ".dmnd",
