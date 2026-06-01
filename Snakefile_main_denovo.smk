@@ -154,7 +154,7 @@ rule all:
                accession=read_accessions(config["accession_file"])),
         # DIAMOND2
         expand(config["root_dir"] + config["diamond_dir"] +
-               "{accession}_picornavirales.dmnd",
+               "{accession}_" + config["diamond"]["name"] + ".dmnd",
                accession=read_accessions(config["accession_file"]))
 
 
