@@ -36,6 +36,7 @@ scripts:
   ## name of the snakefile for read processing
   read_processing_snakefile: "snake_files/Snakefile_read_processing.smk"
   read_processing_denovo_snakefile: "snake_files/Snakefile_read_processing_denovo.smk"
+  read_processing_single_snakefile: "snake_files/Snakefile_read_processing_single.smk"
 
 
 # SRA data download
