@@ -238,7 +238,7 @@ rule assembly:
     input:
         fwd = config["root_dir"] +
               config["extracted_dir"] +
-              "{accession}_ext.fq.gz",
+              "{accession}_ext_single.fq.gz",
     output:
         config["root_dir"] +
         config["assembly_dir"] +

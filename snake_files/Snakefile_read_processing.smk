@@ -292,7 +292,7 @@ rule mapping_single:
         fwd=config["root_dir"] + config["trimmed_dir"] +
             "{accession}_trimmed.fq.gz",
     output:
-        temp(config["root_dir"] + config["mapped_dir"] + "{accession}.sam")
+        temp(config["root_dir"] + config["mapped_dir"] + "{accession}_single.sam")
     priority: 40
     params:
         log = config["logs"]["root"] + config["logs"]["main"] +
@@ -395,6 +395,44 @@ rule sam2bam:
                     shell=True).decode("UTF-8"),
                     file=logfile)
 
+rule sam2bam_single:
+    """Converts the mapped sam files into bam files to save disk space"""
+    input:
+        config["root_dir"] + config["mapped_dir"] + "{accession}_single.sam"
+    output:
+        temp(config["root_dir"] + config["mapped_dir"] +
+        "{accession, [A-Za-z0-9]+}_single.bam")
+    priority: 45
+    params:
+        log=config["logs"]["root"] + config["logs"]["main"] +
+            "main_{accession}.log"
+    threads:
+        config["mapping"]["threads"] # default = 4
+    message:
+        "Converting the .sam file of the mapped reads of accession: "
+        "'{wildcards.accession}' into a .bam file using samtools view."
+    run:
+        with open(params.log,'a') as logfile:
+            with redirect_stdout(logfile):
+                cmd_convert = "(samtools view --threads {} -Sbh {} > " \
+                              "{}) >> {} 2>&1".format(threads, input, output,
+                                                      params.log)
+
+                print(Bcolors.OKGREEN +
+                      "Converting the .sam file of accession: '{}' "
+                      "into a .bam file using the following command: '{}'.\n"
+                      "For the error log, "
+                      "see: '{}'\n".format(wildcards.accession,
+                                           cmd_convert,
+                                           params.log) +
+                      Bcolors.ENDC,
+                      file=logfile)
+
+                print(subprocess.check_output(cmd_convert,
+                    stderr=subprocess.STDOUT,
+                    shell=True).decode("UTF-8"),
+                    file=logfile)
+
 
 ########################### Read extraction ###################################
 # Extracting unmapped reads
@@ -406,6 +444,38 @@ rule bam_extraction:
     output:
         temp(config["root_dir"] + config["mapped_dir"] +
         "{accession, [A-Za-z0-9]+}_unmapped.bam")
+    priority: 50
+    params:
+        log = config["logs"]["root"] + config["logs"]["main"] +
+              "main_{accession}.log"
+    threads:
+        config["mapping"]["threads"] # default = 4
+    run:
+        with open(params.log, 'a') as logfile:
+            with redirect_stdout(logfile):
+                cmd_extraction = "samtools view --threads {} -h -b -f 4 {} " \
+                                 "-o {}".format(threads, input, output)
+
+                print(Bcolors.OKGREEN +
+                      "Extracting the unmapped reads of accession '{}' "
+                      "using the following command: "
+                      "'{}'\n".format(wildcards.accession,
+                                      cmd_extraction) +
+                      Bcolors.ENDC, file=logfile)
+
+                print(subprocess.check_output(cmd_extraction,
+                                              stderr=subprocess.STDOUT,
+                                              shell=True).decode("UTF-8"),
+                      file=logfile)
+
+rule bam_extraction_single:
+    """Extracts the reads that are not mapped against the reference genome """
+    input:
+        config["root_dir"] + config["mapped_dir"] +
+        "{accession}_single.bam"
+    output:
+        temp(config["root_dir"] + config["mapped_dir"] +
+        "{accession, [A-Za-z0-9]+}_unmapped_single.bam")
     priority: 50
     params:
         log = config["logs"]["root"] + config["logs"]["main"] +
@@ -460,6 +530,43 @@ rule convert_bam_to_fastq:
                                  .format(threads,
                                          output.extract_fwd,
                                          output.extract_rev,
+                                         output.extract_unpaired,
+                                         input)
+
+                print(Bcolors.OKGREEN +
+                      "Converting the .bam file of accession: '{}' "
+                      "into a FastQ.gz file using the following command: "
+                      "'{}'\n".format(wildcards.accession,
+                                      cmd_conversion) +
+                      Bcolors.ENDC, file=logfile)
+
+                print(subprocess.check_output(cmd_conversion,
+                                              stderr=subprocess.STDOUT,
+                                              shell=True).decode("UTF-8"),
+                      file=logfile)
+
+rule convert_bam_to_fastq_single:
+    """Converts the unmapped reads from .bam to FastQ.gz format """
+    input:
+        config["root_dir"] + config[
+            "mapped_dir"] + "{accession}_unmapped_single.bam"
+    output:
+        extract_unpaired=config["root_dir"] + config[
+            "extracted_dir"] + "{accession}_ext_single.fq.gz"
+    priority: 55
+    params:
+        log=config["logs"]["root"] + config["logs"]["main"] +
+            "main_{accession}.log"
+    threads:
+        config["mapping"]["threads"] # default = 4
+    message:
+        "Extracting reads from accession: '{wildcards.accession}'"
+    run:
+        with open(params.log, 'a') as logfile:
+            with redirect_stdout(logfile):
+                cmd_conversion = "samtools fastq --threads {} " \
+                                 "-0 {} {}"\
+                                 .format(threads,
                                          output.extract_unpaired,
                                          input)
 
