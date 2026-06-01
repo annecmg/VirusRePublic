@@ -135,7 +135,7 @@ rule fastp:
 
                 # Setting and printing the command
                 cmd_fastp = "fastp --in1 {} --in2 {} --out1 {} --out2 {} " \
-                            "--dedup --dup_calc_accuracy 3 -j {} -h {}"\
+                            "-j {} -h {}"\
                             .format(input.fwd, input.rev,
                                     output.fwd_trimmed, output.rev_trimmed,
                                     params.json_file,
