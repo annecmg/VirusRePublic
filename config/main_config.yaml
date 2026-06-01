@@ -60,7 +60,7 @@ host_genomes: "output/ref_genomes/"
 metadata:
   meta_root: "output/metadata/"
   stats: "stats/"
-  paired_accessions: "paired_accessions/"
+  paired_accessions: "all_accessions/" #store all metadata here, do not change folder name for now
   filtered_accessions: "filtered_accessions.txt"
   paired_file: "paired_end_accessions.txt"
   single_file: "single_end_accessions.txt"
