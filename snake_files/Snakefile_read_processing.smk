@@ -153,6 +153,65 @@ rule fastp:
                                               shell=True).decode("UTF-8"),
                       file=logfile)
 
+rule fastp_single:
+    """Uses FastP to trim the reads of the provided accessions
+
+    TODO:
+        * Make the input .gz files?
+    """
+    input:
+        fwd = config["root_dir"] +
+              config["raw_reads"] +
+              "{accession}.fastq",
+    output:
+        fwd_trimmed=temp(config["root_dir"] +
+                         config["trimmed_dir"] +
+                         "{accession}_trimmed.fq.gz"),
+    priority: 15
+    params:
+        log = config["logs"]["root"] +
+              config["logs"]["main"] +
+              "main_{accession}.log",
+        html_file = config["logs"]["root"] +
+                    config["logs"]["trimming"] +
+                    "{accession}_fastp.html",
+        json_file = config["logs"]["root"] +
+                    config["logs"]["trimming"] +
+                    "{accession}_fastp.json"
+    resources:
+        disk_mb = 2
+    threads: 3 # Fastp default
+    run:
+        # Check for or create the logfile
+        os.makedirs(os.path.dirname(params.log), exist_ok=True)
+
+        with open(params.log, 'a+') as logfile:
+            with redirect_stdout(logfile):
+                # Obtain the current time
+                now = datetime.now()
+                current_time = now.strftime("%d-%b-%Y %H:%M:%S")
+
+                # Setting and printing the command
+                cmd_fastp = "fastp --in1 {} --out1 {} " \
+                            "-j {} -h {}"\
+                            .format(input.fwd,
+                                    output.fwd_trimmed,
+                                    params.json_file,
+                                    params.html_file)
+
+                print(Bcolors.OKGREEN +
+                      "Current time: {}\n"
+                      "Trimming the forward and reverse read of "
+                      "accession: '{}' using the following command: '{}'"
+                      .format(current_time, wildcards.accession, cmd_fastp) +
+                      Bcolors.ENDC, file=logfile)
+
+                print(subprocess.check_output(cmd_fastp,
+                                              stderr=subprocess.STDOUT,
+                                              shell=True).decode("UTF-8"),
+                      file=logfile)
+
+
 
 # Mapping of trimmed reads
 rule mapping:
@@ -225,6 +284,76 @@ rule mapping:
                                               stderr=subprocess.STDOUT,
                                               shell=True).decode("UTF-8"),
                       file=logfile)
+
+# Mapping of trimmed reads
+rule mapping_single:
+    """HISAT2 Maps the trimmed reads against the corresponding host genome """
+    input:
+        fwd=config["root_dir"] + config["trimmed_dir"] +
+            "{accession}_trimmed.fq.gz",
+    output:
+        temp(config["root_dir"] + config["mapped_dir"] + "{accession}.sam")
+    priority: 40
+    params:
+        log = config["logs"]["root"] + config["logs"]["main"] +
+              "main_{accession}.log"
+    resources:
+        disk_mb = 1
+    threads: config["mapping"]["threads"] # default = 4
+    run:
+        with open(params.log,'a') as logfile:
+            with redirect_stdout(logfile):
+            # Determine the right host genome to map to
+                host_taxid = determine_host(wildcards.accession)[0]
+
+                # Map reads of certain hosts against close relatives
+                if int(host_taxid) == 213944:
+                    close_relative = 110799
+                    print(Bcolors.WARNING +
+                          "The host genome of '{}' is not available, mapping "
+                          "against the assembly of close "
+                          "relative '{}'.".format(host_taxid, close_relative) +
+                          Bcolors.ENDC, file=logfile)
+
+                    host_index_path = "{}{}/{}_index"\
+                        .format(config["root_dir"] +
+                                config["host_genomes"],
+                                close_relative,
+                                close_relative)
+                else:
+                    # Set the path to the host genome
+                    host_index_path = "{}{}/{}_index".\
+                        format(config["root_dir"] +
+                               config["host_genomes"],
+                               host_taxid,
+                               host_taxid)
+
+                    # Print messages to the log file
+                    print(Bcolors.OKGREEN +
+                          "The current accession is: '{}'\n"
+                          .format(wildcards.accession),
+                        "The reads will be mapped against the host genome "
+                        "with TaxID: '{}'\n".format(host_taxid),
+                          "Pathway of this host genome: '{}'\n"
+                          .format(host_index_path) +
+                          Bcolors.ENDC,
+                        file=logfile)
+
+                # Running the shell command
+                cmd_mapping = "hisat2 -t -p {} -x {} -U {} -S {} " \
+                              "--no-temp-splicesite".format(threads,
+                                                            host_index_path,
+                                                            input.fwd,
+                                                            output)
+                print(Bcolors.OKGREEN +
+                      "Shell command to perform the mapping: '{}'"
+                      .format(cmd_mapping) +
+                      Bcolors.ENDC, file=logfile)
+                print(subprocess.check_output(cmd_mapping,
+                                              stderr=subprocess.STDOUT,
+                                              shell=True).decode("UTF-8"),
+                      file=logfile)
+
 
 
 # Convert the sam files to .bam files
@@ -314,7 +443,7 @@ rule convert_bam_to_fastq:
         extract_rev=config["root_dir"] + config[
             "extracted_dir"] + "{accession}_ext_2P.fq.gz",
         extract_unpaired=config["root_dir"] + config[
-            "extracted_dir"] + "{accession}_ext_unpaired.fq.gz"
+            "extracted_dir"] + "{accession}_ext.fq.gz"
     priority: 55
     params:
         log=config["logs"]["root"] + config["logs"]["main"] +
