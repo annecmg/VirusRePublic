@@ -22,7 +22,7 @@ To use the pipeline, you have to clone this repository using Git.
 We suggest that you create a specific directory to store VirusRePublic.
 After accessing the directory through the command line, use the following command:
 
-```git clone git@github.com:annecmg/VirusRePublic.git```
+```git clone https://github.com/annecmg/VirusRePublic```
 
 After this step, you can configure snakemake as described in the next section.
 
@@ -54,7 +54,7 @@ running the workflow. Please make sure that the pointer in the
 
 ## Prerequisites
 
-To be able to run the Snakemake workflow of this thesis project, there are 
+To be able to run the Snakemake workflow, there are 
 some prerequisites. An extensive explanation for each of these can be found 
 in the appendix. 
 - [Configuration files](#configuration-files)
