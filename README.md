@@ -3,8 +3,8 @@ This README contains information about how to use the Snakemake workflow
 **VirusRePublic**: VIRUS genome REconstruction from PUBLIC sequencing data.
 The workflow will assemble RNA virus genomes from a list of NCBI SRA accession IDs.
 
-# Installation
-## Prerequisites
+# 1 Installation
+## 1.1 Prerequisites
 
 To install the contents of this repository, you need a valid conda and git installation: 
 
@@ -26,7 +26,7 @@ After accessing the directory through the command line, use the following comman
 
 After this step, you can configure snakemake as described in the next section.
 
-## Conda environment
+## 1.2 Conda environment
 For the workflow to be able to work, it is important that all the tools 
 that are used and the right versions are available. A conda environment 
 file is provided called: `main_environment.yml` which contains all tools 
@@ -50,9 +50,9 @@ work with the latest version of Entrez Direct). This environment is called
 running the workflow. Please make sure that the pointer in the 
 `main_config.yaml` file is set to the right location. 
 
-# Running the pipeline
+# 2 Running the pipeline
 
-## Prerequisites
+## 2.1 Prerequisites
 
 To be able to run the Snakemake workflow, there are 
 some prerequisites. An extensive explanation for each of these can be found 
@@ -63,7 +63,7 @@ in the appendix.
 - [API calls](#api-calls)
 - [Local DIAMOND2 protein database](#local-diamond2-protein-database)
 
-## Snakemake workflow setup and configuration
+## 2.2 Snakemake workflow setup and configuration
 Change the following two lines in `config/main_config.yml`:
 * `root_dir:` the absolute path to the main folder of this GitHub repo
 * `accession_file:` the absolute path to the input libraries.
@@ -78,7 +78,7 @@ file structure like it is now, only change the in and output directories
 when running the workflow.
 An explanation about all parameters in the file is [here](#main_configyaml).
 
-## Metadata
+## 2.3 Metadata
 
 Before running the main workflow, either manually download the metadata of the desired libraries or 
 (preferably) use the standalone snakemake workflow that is included in this 
@@ -91,7 +91,7 @@ conda activate vrp_env
 snakemake -j 1 -s snake_files/Snakefile_metadata.smk --resources api_calls=2 -p --verbose
 ```
 
-## Main usage with host genome
+## 2.4 Main usage with host genome
 The complete Snakemake workflow that includes mapping to the host genome can be started with the following commandline arguments:
 
 ```shell
@@ -112,7 +112,7 @@ libraries at once. Lowering the number will increase the number of
 libraries that are downloaded at once (and thus the disk size that is used).
 The api_calls are further [explained below](#api-calls)
 
-### Test case
+### 2.4.1 Test case
 The folder `/testing_data` contains files with test 
 accessions that can be run to test the installation.
 
@@ -133,7 +133,7 @@ DRR140180
 
 The file `test_accessions_mixed.txt` contains all accessions in the 2 files above.
 
-## Output
+## 2.5 Output
 The workflow will create two main output folders: 
 * `assembly/rnaviralspades/<accession>/contigs.fasta`: for every provided 
   valid library, the workflow will create a fasta file containing contigs
@@ -150,7 +150,7 @@ These indexes will be re-used in subsequent runs with the same host.
 If that is not needed, the folder can be removed.
 * `extracted_reads/`: A folder with the unmapped reads for the libraries with an available host genome.
 
-## Running the pipeline without mapping to the host genome (de novo mode)
+## 2.6 Running the pipeline without mapping to the host genome (de novo mode)
 
 Also in the de novo mode, first run the script to download the metadata, then start the snakefile:
 ```shell
@@ -159,7 +159,7 @@ snakemake -j 1 -s snake_files/Snakefile_metadata.smk --resources api_calls=2 -p 
 snakemake -s Snakefile_main_denovo.smk -j 8 -p --scheduler greedy --resources api_calls=2 disk_mb=15
 ```
 
-## Running the pipeline with and without host mapping
+## 2.7 Running the pipeline with and without host mapping
 
 You can determine automatically which accessions have a host genome:
 
@@ -181,14 +181,27 @@ snakemake -s Snakefile_main_denovo.smk -j 8 -p --scheduler greedy --resources ap
 mv output output-nohost
 ```
 
-## Post processing
+## 2.8 Single-end reads
+
+Although the pipeline is designed for paired-end reads, a snakemake file for single-end read processing is also available. 
+Note that this does not include the filtering by host taxon and correct taxids and currently and can only be run with a host genome.
+
+```
+snakemake -j 1 -s snake_files/Snakefile_metadata.smk --resources api_calls=2 -p --verbose
+snakemake -s Snakefile_main_single.smk -j 8 -p --scheduler greedy --resources api_calls=2 disk_mb=15 
+```
+
+It is also possible to run the single-end mode and the paired-end mode after each other if both are present. 
+The output can then be found in the same directory.
+
+## 2.9 Post processing
 
 The folder [python_scripts](python_scripts/README.md) contains files for post-processing the output. 
 Use `DIAMOND_filter.py` and `obtain_complete_genomes.py` to get the contigs that were found to be of viral origin.
 
-# Appendices and additional information
+# 3 Appendices and additional information
 
-## Local DIAMOND2 protein database
+## 3.1 Local DIAMOND2 protein database
 A local [DIAMOND2](https://github.com/bbuchfink/diamond) protein sequence 
 database is required for the workflow to be able to align the assembled 
 contigs against. This way, the workflow is able to create the final dmnd 
@@ -208,7 +221,7 @@ interest. </br>
 Finally, make sure to set the pointer in `main_config.yaml` so the workflow 
 will use the correct DIAMOND2 database.
 
-## API calls
+## 3.2 API calls
 To automatically download the SRA data, the workflow use the 
 [Entrez Direct](https://www.ncbi.nlm.nih.gov/books/NBK179288/) commandline 
 tool from NCBI. This tool uses API calls to retrieve the data from the NCBI 
@@ -227,10 +240,10 @@ Please see the NCBI website for a full explanation on how to
 When a NCBI API key is used, the snakefiles can be run with `api_calls` set 
 to 9 per second. 
 
-## Additional python scripts
+## 3.3 Additional python scripts
 Information about the usage of the additional pythons scripts can be found in the respective [directory](python_scripts/README.md).
 
-## Snakemake scripts
+## 3.4 Snakemake scripts
 
 The complete workflow consists of two main Snakemake scripts: 
 - `Snakefile_main.smk`: main pipeline file.
@@ -252,8 +265,8 @@ Additional Snakemake scripts:
   layout and host genome availability.
 
 
-## Full explanation of the config files
-### main_config.yaml
+## 3.5 Full explanation of the config files
+### 3.5.1 main_config.yaml
 Below, all parameters that can be found in the `main_config.yaml` file are 
 further explained. Please note that, for the Snakemake workflow to run, it is 
 only needed to adjust the main parameters and the python scripts 
@@ -408,7 +421,7 @@ DIAMOND2 parameters:
   alignment. 
 
 
-### viral_completeness_config.yml
+### 3.5.2 viral_completeness_config.yml
 Below, all parameters that can be found in the `viral_completeness_config.yml` 
 file are further explained. This config file should be used when running 
 [viral_completeness.py](#viralcompletenesspy) to specify where to find all 
