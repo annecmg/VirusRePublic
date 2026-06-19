@@ -89,6 +89,7 @@ def determine_host(accessions):
 
 ######################## Processing of reads ##################################
 # Trimming of reads using fastp
+
 rule fastp:
     """Uses FastP to trim the reads of the provided accessions
 
@@ -98,17 +99,11 @@ rule fastp:
     input:
         fwd = config["root_dir"] +
               config["raw_reads"] +
-              "{accession}_1.fastq",
-        rev = config["root_dir"] +
-              config["raw_reads"] +
-              "{accession}_2.fastq"
+              "{accession}.fastq",
     output:
         fwd_trimmed=temp(config["root_dir"] +
                          config["trimmed_dir"] +
-                         "{accession}_trimmed_1.fq.gz"),
-        rev_trimmed=temp(config["root_dir"] +
-                         config["trimmed_dir"] +
-                         "{accession}_trimmed_2.fq.gz")
+                         "{accession}_trimmed.fq.gz"),
     priority: 15
     params:
         log = config["logs"]["root"] +
@@ -134,10 +129,10 @@ rule fastp:
                 current_time = now.strftime("%d-%b-%Y %H:%M:%S")
 
                 # Setting and printing the command
-                cmd_fastp = "fastp --in1 {} --in2 {} --out1 {} --out2 {} " \
+                cmd_fastp = "fastp --in1 {} --out1 {} " \
                             "-j {} -h {}"\
-                            .format(input.fwd, input.rev,
-                                    output.fwd_trimmed, output.rev_trimmed,
+                            .format(input.fwd,
+                                    output.fwd_trimmed,
                                     params.json_file,
                                     params.html_file)
 
@@ -154,14 +149,13 @@ rule fastp:
                       file=logfile)
 
 
+
 # Mapping of trimmed reads
 rule mapping:
     """HISAT2 Maps the trimmed reads against the corresponding host genome """
     input:
         fwd=config["root_dir"] + config["trimmed_dir"] +
-            "{accession}_trimmed_1.fq.gz",
-        rev=config["root_dir"] + config["trimmed_dir"] +
-            "{accession}_trimmed_2.fq.gz"
+            "{accession}_trimmed.fq.gz",
     output:
         temp(config["root_dir"] + config["mapped_dir"] + "{accession}.sam")
     priority: 40
@@ -211,11 +205,10 @@ rule mapping:
                         file=logfile)
 
                 # Running the shell command
-                cmd_mapping = "hisat2 -t -p {} -x {} -1 {} -2 {} -S {} " \
+                cmd_mapping = "hisat2 -t -p {} -x {} -U {} -S {} " \
                               "--no-temp-splicesite".format(threads,
                                                             host_index_path,
                                                             input.fwd,
-                                                            input.rev,
                                                             output)
                 print(Bcolors.OKGREEN +
                       "Shell command to perform the mapping: '{}'"
@@ -225,6 +218,7 @@ rule mapping:
                                               stderr=subprocess.STDOUT,
                                               shell=True).decode("UTF-8"),
                       file=logfile)
+
 
 
 # Convert the sam files to .bam files
@@ -309,10 +303,6 @@ rule convert_bam_to_fastq:
         config["root_dir"] + config[
             "mapped_dir"] + "{accession}_unmapped.bam"
     output:
-        extract_fwd=config["root_dir"] + config[
-            "extracted_dir"] + "{accession}_ext_1P.fq.gz",
-        extract_rev=config["root_dir"] + config[
-            "extracted_dir"] + "{accession}_ext_2P.fq.gz",
         extract_unpaired=config["root_dir"] + config[
             "extracted_dir"] + "{accession}_ext.fq.gz"
     priority: 55
@@ -326,11 +316,9 @@ rule convert_bam_to_fastq:
     run:
         with open(params.log, 'a') as logfile:
             with redirect_stdout(logfile):
-                cmd_conversion = "samtools fastq --threads {} -1 {} -2 {} " \
-                                 "-s {} -N {}"\
+                cmd_conversion = "samtools fastq --threads {} " \
+                                 "-0 {} {}"\
                                  .format(threads,
-                                         output.extract_fwd,
-                                         output.extract_rev,
                                          output.extract_unpaired,
                                          input)
 

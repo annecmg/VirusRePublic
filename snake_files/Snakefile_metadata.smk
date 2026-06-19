@@ -164,15 +164,16 @@ rule filter_librlayout:
                        config["metadata"]["meta_root"] +
                        config["metadata"]["stats"] +
                        config["metadata"]["undetermined"],
-        single= config["root_dir"] +
-                config["metadata"]["meta_root"] +
-                config["metadata"]["stats"] +
-                config["metadata"]["single_file"],
+
     output:
         paired = config["root_dir"] +
                  config["metadata"]["meta_root"] +
                  config["metadata"]["stats"] +
                  config["metadata"]["paired_file"],
+        single= config["root_dir"] +
+                config["metadata"]["meta_root"] +
+                config["metadata"]["stats"] +
+                config["metadata"]["single_file"],
 
     log: config["root_dir"] +
          config["logs"]["root"] +
@@ -180,19 +181,23 @@ rule filter_librlayout:
          "main_accession_filter.log"
     shell:
         """
-        (python3 {params.script} -a {input} -s {params.single} \
+        (python3 {params.script} -a {input} -s {output.single} \
         -p {output.paired} -u {params.undetermined}) >> {log} 2>&1
         """
 
 
 ########################## Downloading metadata ###############################
 rule metadata_download:
-    """Downloads the metadata of the paired-end accessions """
+    """Downloads the metadata of all accessions """
     input:
         paired_accessions = config["root_dir"] +
                             config["metadata"]["meta_root"] +
                             config["metadata"]["stats"] +
-                            config["metadata"]["paired_file"]
+                            config["metadata"]["paired_file"],
+        single_accessions= config["root_dir"] +
+                            config["metadata"]["meta_root"] +
+                            config["metadata"]["stats"] +
+                            config["metadata"]["single_file"]
     output:
         temp(config["root_dir"] +
         config["metadata"]["meta_root"] +
@@ -228,7 +233,8 @@ rule metadata_download:
                 os.makedirs(paired_folder, exist_ok=True)
 
             # Obtain the metadata of every accession
-            for accession in read_lines(str(input.paired_accessions)):
+            all_accs = list(read_lines(str(input.paired_accessions))) + read_lines(str(input.single_accessions))
+            for accession in all_accs:
                 metadata_file = "{}{}_metadata.txt"\
                                 .format(paired_folder,
                                         accession)

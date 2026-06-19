@@ -49,9 +49,9 @@ min_version("5.2.0")
 
 ######################### Include statements ##################################
 # make sure the location of these scripts is relative to this main script!
-include: config["scripts"]["downloading_snakefile"] # download SRA files
+include: config["scripts"]["downloading_single_snakefile"] # download SRA files
 include: config["scripts"]["host_genome_snakefile"] # download host genomes
-include: config["scripts"]["read_processing_snakefile"] # processing of reads
+include: config["scripts"]["read_processing_single_snakefile"] # processing of reads
 
 
 ############################ Functions ########################################
@@ -176,7 +176,7 @@ rule all:
                    read_lines(config["root_dir"] +
                               config["metadata"]["meta_root"] +
                               config["metadata"]["stats"] +
-                              config["metadata"]["filtered_accessions"])
+                              config["metadata"]["single_file"])
                )
         ),
         # # FastP trimming (read processing Snakefile)
@@ -219,17 +219,17 @@ rule all:
         #expand(config["root_dir"] + config["assembly_dir"] +
         #       "{tool}/{accession}/contigs.fasta",
         #       tool=config["assembly"]["tool"].lower(),
-        #       accession=read_lines(config["root_dir"] +
-        #                      config["metadata"]["meta_root"] +
-        #                      config["metadata"]["stats"] +
-        #                      config["metadata"]["filtered_accessions"])),
+        #    accession=read_lines(config["root_dir"] +
+        #                         config["metadata"]["meta_root"] +
+        #                         config["metadata"]["stats"] +
+        #                         config["metadata"]["single_file"])),
         # DIAMOND2
         expand(config["root_dir"] + config["diamond_dir"] +
                "{accession}_" + config["diamond"]["name"] + ".dmnd",
-               accession=read_lines(config["root_dir"] +
-                              config["metadata"]["meta_root"] +
-                              config["metadata"]["stats"] +
-                              config["metadata"]["filtered_accessions"]))
+            accession=read_lines(config["root_dir"] +
+                                 config["metadata"]["meta_root"] +
+                                 config["metadata"]["stats"] +
+                                 config["metadata"]["single_file"]))
 
 
 ##################### Assembly using SPAdes/Trinity ###########################
@@ -238,10 +238,7 @@ rule assembly:
     input:
         fwd = config["root_dir"] +
               config["extracted_dir"] +
-              "{accession}_ext_1P.fq.gz",
-        rev = config["root_dir"] +
-              config["extracted_dir"] +
-              "{accession}_ext_2P.fq.gz"
+              "{accession}_ext.fq.gz",
     output:
         config["root_dir"] +
         config["assembly_dir"] +
@@ -272,8 +269,8 @@ rule assembly:
                 tool = "--meta"
 
             # Run the assembly using rnaviral- or metaSPAdes.
-            cmd_assembly = "spades.py {} -1 {} -2 {} -t {} -k {} -o {}"\
-                           .format(tool, input.fwd, input.rev, threads,
+            cmd_assembly = "spades.py {} -s {} -t {} -k {} -o {}"\
+                           .format(tool, input.fwd, threads,
                                    kmers, params.outdir)
             # Print the used command to the log file
             print(Bcolors.OKGREEN +

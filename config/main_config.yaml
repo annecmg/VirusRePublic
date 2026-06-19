@@ -29,6 +29,7 @@ scripts:
 
   ## name of the snakefile to download the SRA data
   downloading_snakefile: "snake_files/Snakefile_downloading.smk"
+  downloading_single_snakefile: "snake_files/Snakefile_downloading_single.smk"
 
   ## name of the snakefile to download the host genomes
   host_genome_snakefile: "snake_files/Snakefile_host_genomes.smk"
@@ -36,6 +37,7 @@ scripts:
   ## name of the snakefile for read processing
   read_processing_snakefile: "snake_files/Snakefile_read_processing.smk"
   read_processing_denovo_snakefile: "snake_files/Snakefile_read_processing_denovo.smk"
+  read_processing_single_snakefile: "snake_files/Snakefile_read_processing_single.smk"
 
 
 # SRA data download
@@ -59,7 +61,7 @@ host_genomes: "output/ref_genomes/"
 metadata:
   meta_root: "output/metadata/"
   stats: "stats/"
-  paired_accessions: "paired_accessions/"
+  paired_accessions: "all_accessions/" #store all metadata here, do not change folder name for now
   filtered_accessions: "filtered_accessions.txt"
   paired_file: "paired_end_accessions.txt"
   single_file: "single_end_accessions.txt"
