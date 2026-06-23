@@ -315,7 +315,7 @@ rule diamond:
               "main_{accession}.log"
     output:
         config["root_dir"] + config["diamond_dir"] + "{accession}_" +
-        config["diamond"]["name"] + ".dmnd",
+        config["diamond"]["name"] + ".dmnd"
 
 accession = read_accessions(config["accession_file"])
 
