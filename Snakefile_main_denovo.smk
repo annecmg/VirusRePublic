@@ -314,9 +314,11 @@ rule diamond:
               config["logs"]["main"] +
               "main_{accession}.log"
     output:
-        config["root_dir"] +
-        config["diamond_dir"] +
-        "{accession}_picornavirales.dmnd"
+        config["root_dir"] + config["diamond_dir"] + "{accession}_" +
+        config["diamond"]["name"] + ".dmnd",
+
+accession = read_accessions(config["accession_file"])
+
     run:
         with open(params.log, 'a') as logfile:
             cmd_diamond = "diamond blastx -d {} -q {} -p {} -o {} -f 6"\
